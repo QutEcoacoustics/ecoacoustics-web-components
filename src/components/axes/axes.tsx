@@ -1,32 +1,59 @@
-import { Component, Prop, h } from '@stencil/core';
-import { format } from '../../utils/utils';
+import { Component, Prop, Element, State, h } from '@stencil/core';
+import { resizeObservable } from '../../utils/observables';
+
+import Globals from '../../utils/globals';
 
 @Component({
-  tag: 'x-axes',
+  tag: 'ewc-axes',
   styleUrl: 'axes.css',
   shadow: true,
 })
 export class Axes {
-  /**
-   * The first name
-   */
-  @Prop() first: string;
+  @Element() el;
 
-  /**
-   * The middle name
-   */
-  @Prop() middle: string;
+  // The id of the HTMLMediaElement
+  @Prop() media: string;
+  // Media source reference retrieved by getMedia
+  @State() mediaSource: typeof Globals._win.HTMLMediaElement.prototype;
 
-  /**
-   * The last name
-   */
-  @Prop() last: string;
+  // The id of the target element
+  @Prop() for: string;
+  // Reference to the target element
+  @State() forElement: typeof Globals._win.HTMLElement.prototype;
 
-  private getText(): string {
-    return format(this.first, this.middle, this.last);
+  // Position and size of element retrieved from target element
+  @State() left: number = 0;
+  @State() top: number = 0;
+  @State() width: number = 0;
+  @State() height: number = 0;
+
+  @Prop() border: number = 30;
+
+  // Observable fires on window resize
+  @Prop({ mutable: true }) containerResize;
+
+  componentWillLoad() {
+    this.forElement = this.el.ownerDocument.querySelector(`#${this.for}`);
+    this.containerResize = resizeObservable(this.forElement);
+
+    this.containerResize.subscribe(e => this.followTarget());
+    this.followTarget();
+  }
+
+  followTarget() {
+    let bounds = this.forElement.getBoundingClientRect();
+
+    this.left = bounds.left - this.border;
+    this.top = bounds.top;
+    this.width = bounds.width + this.border;
+    this.height = bounds.height + this.border;
   }
 
   render() {
-    return <div>Hello, World! I'm {this.getText()}</div>;
+    return (
+      <div style={{ left: `${this.left}px`, top: `${this.top}px`, width: `${this.width}px`, height: `${this.height}px` }}>
+        <svg width={`${this.width}px`} height={`${this.height}px`}></svg>
+      </div>
+    );
   }
 }
