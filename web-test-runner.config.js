@@ -102,7 +102,8 @@ export default {
   testFramework: {
     // https://mochajs.org/api/mocha
     config: {
-      ui: 'tdd',
+      // suite vs describe === 'tdd' vs 'bdd'
+      ui: 'bdd',
     },
   },
   plugins: [

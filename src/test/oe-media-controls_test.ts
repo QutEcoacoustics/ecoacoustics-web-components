@@ -1,10 +1,12 @@
 import '../oe-media-controls';
 import {OeMediaControls} from '../oe-media-controls.js';
 import {fixture, assert} from '@open-wc/testing';
-import {html} from 'lit/static-html.js';
-import {beforeEach} from 'mocha/interfaces/common.js';
+import {html, literal} from 'lit/static-html.js';
+import { render } from 'lit-html';
+import { fixtureWithContext } from './helpers.ts/fixtureQuery';
 
-suite('oe-media-controls', () => {
+
+describe('oe-media-controls', () => {
   function getMediaControls(rootEl: Element): HTMLElement | null {
     return rootEl.querySelector<HTMLElement>('oe-media-controls');
   }
@@ -13,23 +15,23 @@ suite('oe-media-controls', () => {
     return mediaControl.shadowRoot?.querySelector('button');
   }
 
-  async function setup(): Promise<Element> {
-    return await fixture(html`
-      <div>
-        <audio id="audio" src="dev/sample.wav"></audio>
-        <oe-media-controls for="audio"></oe-media-controls>
-      </div>
-    `);
+  async function setup(): Promise<OeMediaControls> {
+    return fixtureWithContext(
+      `<audio id="audio" src="dev/sample.wav"></audio>`,
+      html`<oe-media-controls for="audio"></oe-media-controls>`);
   }
 
-  test('is defined', () => {
+  beforeEach(async () => {
+    console.log('beforeEach');
+  });
+
+  it('is defined', () => {
     const el = document.createElement('oe-media-controls');
     assert.instanceOf(el, OeMediaControls);
   });
 
-  test('renders with default values', async () => {
-    const el = await setup();
-    const mediaControls = getMediaControls(el);
+  it('renders with default values', async () => {
+    const mediaControls = await setup();
     assert.shadowDom.equal(
       mediaControls,
       `
@@ -42,14 +44,12 @@ suite('oe-media-controls', () => {
     );
   });
 
-  test('can play and pause an attached media element', async () => {
-    //const el = await fixtureWrapper
-    await fixture(html`<audio id="audio" src="dev/sample.wav"></audio>`);
-    const el = await fixture(
-      html` <oe-media-controls for="audio"></oe-media-controls>`
-    );
+  it('renders with default values', async () => {
+    const mediaControls = await fixtureWithContext(
+      `<audio id="audio" src="dev/sample.wav"></audio>`,
+      html`<oe-media-controls for="audio"></oe-media-controls>`);
     assert.shadowDom.equal(
-      el,
+      mediaControls,
       `
         <div>
           <button part="play-pause-button">
@@ -60,35 +60,41 @@ suite('oe-media-controls', () => {
     );
   });
 
-  suite('attached media element playing', () => {
-    test('should show pause label', async () => {});
-    test('should show custom pause label', async () => {});
-    test('pause button should pause media element', async () => {});
-    test('pause button should update label', async () => {});
+
+  describe('attached media element playing', () => {
+    it('should show pause label', async () => {});
+    it('should show custom pause label', async () => {});
+    it('pause button should pause media element', async () => {});
+    it('pause button should update label', async () => {});
   });
 
-  suite('attached media element paused', () => {
-    let rootEl: Element;
+  describe('attached media element paused', () => {
+    let audioElement: HTMLAudioElement;
     let mediaControls: HTMLElement;
 
     beforeEach(async () => {
-      rootEl = await setup();
-      mediaControls = getMediaControls(rootEl) as HTMLElement;
+      mediaControls =  await setup();
+      audioElement = mediaControls.parentNode?.querySelector('audio') as HTMLAudioElement;
+      audioElement.pause();
     });
 
-    test('should show play label', async () => {
+    it('verifies the state is paused', async () => {
+      assert.isTrue(audioElement.paused);
+    });
+
+    it('should show play label', async () => {
       const btn = getPlayPauseBtn(mediaControls);
       console.log(btn);
     });
-    test('should show custom play label', async () => {});
-    test('play button should play media element', async () => {});
-    test('play button should update label', async () => {});
+    it('should show custom play label', async () => {});
+    it('play button should play media element', async () => {});
+    it('play button should update label', async () => {});
   });
 
-  test('', () => {});
-  test('', () => {});
-  test('', () => {});
-  test('', () => {});
-  test('', () => {});
-  test('', () => {});
+  it('', () => {});
+  it('', () => {});
+  it('', () => {});
+  it('', () => {});
+  it('', () => {});
+  it('', () => {});
 });

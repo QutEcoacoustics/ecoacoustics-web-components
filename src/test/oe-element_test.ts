@@ -9,13 +9,13 @@ import {OeElement} from '../oe-element.js';
 import {fixture, assert} from '@open-wc/testing';
 import {html} from 'lit/static-html.js';
 
-suite('oe-element', () => {
-  test('is defined', () => {
+describe('oe-element', () => {
+  it('is defined', () => {
     const el = document.createElement('oe-element');
     assert.instanceOf(el, OeElement);
   });
 
-  test('renders with default values', async () => {
+  it('renders with default values', async () => {
     const el = await fixture(html`<oe-element></oe-element>`);
     assert.shadowDom.equal(
       el,
@@ -27,7 +27,7 @@ suite('oe-element', () => {
     );
   });
 
-  test('renders with a set name', async () => {
+  it('renders with a set name', async () => {
     const el = await fixture(html`<oe-element name="Test"></oe-element>`);
     assert.shadowDom.equal(
       el,
@@ -39,7 +39,7 @@ suite('oe-element', () => {
     );
   });
 
-  test('handles a click', async () => {
+  it('handles a click', async () => {
     const el = (await fixture(html`<oe-element></oe-element>`)) as OeElement;
     const button = el.shadowRoot!.querySelector('button')!;
     button.click();
@@ -54,7 +54,7 @@ suite('oe-element', () => {
     );
   });
 
-  test('styling applied', async () => {
+  it('styling applied', async () => {
     const el = (await fixture(html`<oe-element></oe-element>`)) as OeElement;
     await el.updateComplete;
     assert.equal(getComputedStyle(el).paddingTop, '16px');
