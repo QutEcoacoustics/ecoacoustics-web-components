@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>&lt;oe-element&gt; Demo</title>
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../node_modules/lit/polyfill-support.js"></script>
+    <script type="module" src="../oe-element.js"></script>
+    <script type="module" src="../oe-media-controls.js"></script>
+    <base href="dev/" />
+    <style>
+      p {
+        border: solid 1px blue;
+        padding: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <oe-element>
+      <p>This is child content</p>
+    </oe-element>
+
+    <div>
+      <h1>Media Controls</h1>
+      <audio id="audio" src="sample.wav" controls></audio>
+
+      <hr />
+
+      <h2>Media Controls (default)</h2>
+      <oe-media-controls for="audio"></oe-media-controls>
+
+      <hr />
+
+      <h2>Media Controls (custom labels)</h2>
+      <oe-media-controls for="audio">
+        <span slot="play-label">▶️ play</span>
+        <span slot="pause-label">⏸️ pause</span>
+      </oe-media-controls>
+
+      <hr />
+      <div>
+        <h2>Media Controls (parts styling css)</h2>
+        <style>
+          #mediaControlsStyled::part(play-pause-button) {
+            border-radius: 10px;
+          }
+        </style>
+        <oe-media-controls
+          id="mediaControlsStyled"
+          for="audio"
+        ></oe-media-controls>
+      </div>
+
+      <hr />
+
+      <div id="exampleCssVars">
+        <h2>Media Controls (theming: update general style css)</h2>
+        <style>
+          #exampleCssVars oe-media-controls {
+            --oe-background-colour: red;
+          }
+        </style>
+        <oe-media-controls for="audio"></oe-media-controls>
+      </div>
+    </div>
+  </body>
+</html>

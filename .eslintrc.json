@@ -1,32 +1,46 @@
 {
-  "env": {
-    "browser": true,
-    "es2021": true
-  },
-  "extends": ["airbnb-base", "prettier"],
-
+  "root": true,
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": 12,
+    "ecmaVersion": 2020,
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint", "prettier"],
-  "rules": {
-    "import/extensions": ["error", "ignorePackages", { "js": "never", "jsx": "never", "ts": "never", "tsx": "never" }],
-    "no-implicit-globals": ["error"],
-    "no-console": ["error"],
-    "no-alert": ["error"],
-    "no-global-assign": ["error"],
-    "import/no-extraneous-dependencies": ["error", { "devDependencies": ["**/*.spec.tsx", "**/*.e2e.ts"] }],
-    "prettier/prettier": ["error"],
-    "no-undef": ["error", { "allow": [] }],
-    "no-underscore-dangle": [{ "allow": ["_win", "_doc", "_logger"], "allowAfterThis": true }]
+  "plugins": ["@typescript-eslint"],
+  "env": {
+    "browser": true
   },
-  "settings": {
-    "import/resolver": {
-      "node": {
-        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+  "rules": {
+    "no-prototype-builtins": "off",
+    "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-unused-vars": ["warn", {"argsIgnorePattern": "^_"}]
+  },
+  "overrides": [
+    {
+      "files": ["rollup.config.js", "web-test-runner.config.js"],
+      "env": {
+        "node": true
+      }
+    },
+    {
+      "files": [
+        "*_test.ts",
+        "**/custom_typings/*.ts",
+        "packages/lit-ssr/src/test/integration/tests/**",
+        "packages/lit-ssr/src/lib/util/parse5-utils.ts"
+      ],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off"
       }
     }
-  }
+  ]
 }
