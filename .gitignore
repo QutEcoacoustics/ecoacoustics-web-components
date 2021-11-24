@@ -3,7 +3,8 @@ node_modules/
 /test/
 custom-elements.json
 # top level source
-oe-element.js
-oe-element.js.map
-oe-element.d.ts
-oe-element.d.ts.map
+docs/
+**/*.js
+**/*.js.map
+**/*.d.ts
+**/*.d.ts.map
