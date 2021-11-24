@@ -1,6 +1,7 @@
 import {css, html, LitElement} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
-import {AudioWrapper} from './helpers/audio-wrapper';
+import {DomQueryController} from './decorators/dom-query';
+//import {AudioWrapper} from './helpers/audio-wrapper';
 import {elementSelector} from './helpers/element-selector';
 import {WithLogging} from './mixins/LoggingElement';
 
@@ -33,10 +34,13 @@ export class OeMediaControls extends WithLogging(LitElement) {
    * control
    */
   @property({
-    type: HTMLAudioElement,
+    type: String,
+    //reflect: true,
     converter: elementSelector(),
   })
   for?: HTMLAudioElement = undefined;
+
+  // Store for id in
 
   /** Tracks the current state of the audio player */
   @state()
@@ -44,48 +48,54 @@ export class OeMediaControls extends WithLogging(LitElement) {
 
   /** Tracks any error messages which need to be displayed */
   @state()
-  public error = '';
+  public error: string | null = '';
 
-  private audioWrapper!: AudioWrapper;
+  //private audioWrapper!: AudioWrapper;
 
   public constructor() {
     super();
+    new DomQueryController(this, 'for');
   }
 
-  public override connectedCallback(): void {
-    super.connectedCallback();
+  public override attributeChangedCallback(name: string, old: string | null, value: string | null): void {
+    super.attributeChangedCallback(name, old, value);
 
-    if (!this.for) {
-      this.state = AudioState.Error;
-      this.error = 'oe-media-controls is not linked to an audio element';
-      this.logger.error('oe-media-controls is not linked to an audio element');
-      return;
-    }
+    console.log(this.for);
 
-    if (!this.audioWrapper) {
-      this.logger.log('Creating Audio Wrapper');
-      this.audioWrapper = new AudioWrapper(this.for);
-    }
+    // if (!this.for) {
+    //   this.state = AudioState.Error;
+    //   this.error = 'oe-media-controls is not linked to an audio element';
+    //   this.logger.error('oe-media-controls is not linked to an audio element');
+    //   return;
+    // }
+    // this.state = AudioState.Loading;
+    // this.error = null;
 
-    this.audioWrapper.eventUpdates().subscribe((event) => {
-      if (event.error) {
-        this.state = AudioState.Error;
-        this.error = event.error;
-      } else if (!event.canPlay) {
-        this.state = AudioState.Loading;
-      } else if (event.paused || event.ended) {
-        this.state = AudioState.Paused;
-      } else if (event.playing) {
-        this.state = AudioState.Playing;
-      }
-    });
+    // if (!this.audioWrapper) {
+    //   this.audioWrapper = new AudioWrapper(this.for);
+    // }
+
+    // this.audioWrapper.eventUpdates().subscribe((event) => {
+    //   if (event.error) {
+    //     this.state = AudioState.Error;
+    //     this.error = event.error;
+    //   } else if (!event.canPlay) {
+    //     this.state = AudioState.Loading;
+    //   } else if (event.paused || event.ended) {
+    //     this.state = AudioState.Paused;
+    //   } else if (event.playing) {
+    //     this.state = AudioState.Playing;
+    //   }
+    // });
   }
 
   public override disconnectedCallback(): void {
-    this.audioWrapper.destroy();
+    // this.audioWrapper?.destroy();
   }
 
   public override render() {
+    console.log(this.for);
+
     return html`<div>${this.error ? this.errorMessage() : this.playPauseButton()}</div>`;
   }
 

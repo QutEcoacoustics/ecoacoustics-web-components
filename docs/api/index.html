@@ -150,7 +150,8 @@ TODO Full description here
      </tr>
      
        <tr>
-         <td>for</td><td></td><td>HTMLAudioElement | undefined</td><td>undefined</td>
+         <td>for</td><td>ID selector which determines which audio player this element should
+control</td><td>HTMLAudioElement | undefined</td><td>undefined</td>
        </tr>
      
    </table>
@@ -163,16 +164,37 @@ TODO Full description here
      </tr>
      
        <tr>
-         <td>for</td><td>for</td><td></td><td>HTMLAudioElement | undefined</td><td>undefined</td>
+         <td>for</td><td>for</td><td>ID selector which determines which audio player this element should
+control</td><td>HTMLAudioElement | undefined</td><td>undefined</td>
        </tr>
      
        <tr>
-         <td>state</td><td></td><td></td><td>'Play' | 'Pause'</td><td>'Play'</td>
+         <td>state</td><td></td><td>Tracks the current state of the audio player</td><td></td><td></td>
+       </tr>
+     
+       <tr>
+         <td>error</td><td></td><td>Tracks any error messages which need to be displayed</td><td>string | null</td><td>''</td>
        </tr>
      
    </table>
    
        
+   <h3>Methods</h3>
+   <table>
+     <tr>
+       <th>Name</th><th>Parameters</th><th>Description</th><th>Return</th>
+     </tr>
+     
+       <tr>
+         <td>pause</td><td></td><td>Tell the audio player to pause</td><td>void</td>
+       </tr>
+     
+       <tr>
+         <td>play</td><td></td><td>Tell the audio player to play</td><td>void</td>
+       </tr>
+     
+   </table>
+ 
            
          
        

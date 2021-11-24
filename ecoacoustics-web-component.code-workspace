@@ -1,7 +1,7 @@
 {
   "folders": [{"path": "."}],
   "settings": {
-    "files.autoSave": "onFocusChange",
+    //"files.autoSave": "onFocusChange",
     "editor.codeActionsOnSave": {
       "source.fixAll": true
     },

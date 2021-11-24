@@ -16,6 +16,7 @@ interface AudioPlayerState {
 type AudioPlayerEvent = keyof HTMLMediaElementEventMap;
 type AudioWrapperEvent = {event?: AudioPlayerEvent} & AudioPlayerState;
 
+// TODO Convert to controller
 export class AudioWrapper extends WithLogging(class {}) {
   private audioElement: HTMLAudioElement;
   private $update: Subject<AudioWrapperEvent>;
@@ -28,7 +29,6 @@ export class AudioWrapper extends WithLogging(class {}) {
     haveEnoughData: 4,
   };
   private audioEvents: AudioPlayerEvent[] = [
-    'abort',
     'abort',
     'canplay',
     'canplaythrough',

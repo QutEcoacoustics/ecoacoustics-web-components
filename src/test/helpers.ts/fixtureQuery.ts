@@ -1,35 +1,49 @@
+import {elementUpdated} from '@open-wc/testing';
+import {fixtureWrapper} from '@open-wc/testing-helpers';
+import {LitHTMLRenderable} from '@open-wc/testing-helpers/types/src/litFixture';
+import {LitElement, render} from 'lit';
 
-
-import { fixture } from "@open-wc/testing";
-import { FixtureOptions } from "@open-wc/testing-helpers/types/src/fixture-no-side-effect";
-import { LitHTMLRenderable } from "@open-wc/testing-helpers/types/src/litFixture";
-import { render, TemplateResult } from "lit";
-
-
-export async function fixtureWithContext<T extends Element>(context: LitHTMLRenderable, template: LitHTMLRenderable, options?: FixtureOptions) : Promise<T> {
-    // create the container
-    const parentNode = (options?.parentNode as HTMLElement) ?? document.createElement('div');
-
-    // render the context html
-    render(context, parentNode);
-
-    // Render the target custom element through the fixture helper.
-    // Invoking fixture is important because it waits for the custom element to finish rendering.
-
-    // TODO: BROKEN - this replaces the content in the parentNode, but it should append to it
-
-    const element = await fixture(template, Object.assign({}, options, { parentNode }));
-
-
-    // todo: return wrapper element? 
-    // todo: return each context after rendering?
-    return element as T;
+function isLitElement(element: Element): element is LitElement {
+  return element instanceof LitElement;
 }
 
-// better idea:
-// render a multi-element template
-// scan through the nodes and wait for each to finish rendering
-// and then return the targeted node for the test
-// adopt from: https://github.com/open-wc/open-wc/blob/9d275bd3a489d29325ca9f1ea5f887ffb4c1cb08/packages/testing-helpers/src/litFixture.js#L62
+/**
+ * Similar to fixture, renders multiple elements in a wrapper, waits for
+ * all LitElements to be rendered, and returns the targeted element.
+ * After the test the wrapper and child nodes are automatically removed.
+ * Adapted from: https://github.com/open-wc/open-wc/blob/9d275bd3a489d29325ca9f1ea5f887ffb4c1cb08/packages/testing-helpers/src/litFixture.js#L62
+ * @param template - The template to render.
+ * @param selector - A query selector for the targeted element
+ * @returns - A promise that resolves to the rendered element.
+ */
+export async function fixtureWithContext<T extends LitElement>(
+  template: LitHTMLRenderable,
+  selector?: string
+): Promise<T> {
+  // create the container
+  const parentNode = fixtureWrapper() as HTMLElement;
 
-export declare const fixtureTarget: (strings: TemplateStringsArray, ...values: unknown[]) => TemplateResult;
+  // render the context html
+  render(template, parentNode);
+
+  // now scan through dom and wait for each LitElement to finish rendering
+  const nodes = Array.from(parentNode.querySelectorAll('*')).filter(isLitElement);
+
+  if (nodes.length > 1 && !selector) {
+    throw new Error('fixtureWithContext() requires a selector when multiple LitElements are rendered');
+  }
+
+  await Promise.all(nodes.map(elementUpdated));
+
+  const target = selector ? parentNode.querySelector(selector) : nodes[0];
+
+  if (!target) {
+    throw new Error(`Could not find element with selector: ${selector}`);
+  }
+
+  if (!(target instanceof LitElement)) {
+    throw new Error('Element found is not an instance of LitElement');
+  }
+
+  return target as T;
+}

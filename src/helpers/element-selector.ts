@@ -1,12 +1,9 @@
 import {ComplexAttributeConverter} from '@lit/reactive-element';
 
-export function elementSelector(): ComplexAttributeConverter<
-  HTMLElement | null,
-  HTMLElement
-> {
+export function elementSelector(): ComplexAttributeConverter<HTMLElement | null, HTMLElement> {
   return {
     fromAttribute: (value, _type) => {
-      // TODO Use type of _type to determine how to handle query (throw error if wrong type?)
+      console.debug('fromAttribute');
       if (!value) {
         return null;
       }
