@@ -1,6 +1,6 @@
 import {css, html, LitElement} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
-import {DomQueryController} from './decorators/dom-query';
+import {domQuery} from './decorators/dom-query';
 //import {AudioWrapper} from './helpers/audio-wrapper';
 import {elementSelector} from './helpers/element-selector';
 import {WithLogging} from './mixins/LoggingElement';
@@ -33,10 +33,11 @@ export class OeMediaControls extends WithLogging(LitElement) {
    * ID selector which determines which audio player this element should
    * control
    */
+  @domQuery<OeMediaControls>()
   @property({
     type: String,
-    //reflect: true,
     converter: elementSelector(),
+
   })
   for?: HTMLAudioElement = undefined;
 
@@ -54,13 +55,12 @@ export class OeMediaControls extends WithLogging(LitElement) {
 
   public constructor() {
     super();
-    new DomQueryController(this, 'for');
   }
 
   public override attributeChangedCallback(name: string, old: string | null, value: string | null): void {
     super.attributeChangedCallback(name, old, value);
 
-    console.log(this.for);
+    console.log(this.for, this.for?.isConnected);
 
     // if (!this.for) {
     //   this.state = AudioState.Error;

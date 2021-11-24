@@ -2,8 +2,8 @@ import {expect, fixture} from '@open-wc/testing';
 import {html} from 'lit/static-html.js';
 import '../oe-media-controls';
 import {AudioState, OeMediaControls} from '../oe-media-controls.js';
-import {fixtureWithContext} from './helpers.ts/fixtureQuery';
-import {spyOnLogger} from './helpers.ts/spyOnLogger';
+import {fixtureWithContext} from './helpers/fixtureQuery';
+import {spyOnLogger} from './helpers/spyOnLogger';
 
 describe('oe-media-controls', () => {
   function getPlayPauseButton(mediaControl: OeMediaControls) {
