@@ -1,1 +1,0 @@
-{"version":3,"file":"oe-media-controls.d.ts","sourceRoot":"","sources":["src/oe-media-controls.ts"],"names":[],"mappings":"AAAA,OAAO,EAAY,UAAU,EAAC,MAAM,KAAK,CAAC;AAI1C;;;;GAIG;AACH,qBACa,eAAgB,SAAQ,UAAU;IAC7C,OAAgB,MAAM,4BAOpB;IAMF,GAAG,CAAC,EAAE,gBAAgB,CAAa;IAE1B,MAAM;IAKf,OAAO,CAAC,KAAK,CAA4B;IAEzC,OAAO,CAAC,eAAe;IAUvB,OAAO,CAAC,YAAY;IAUpB,OAAO,CAAC,SAAS;CAGlB"}

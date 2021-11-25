@@ -1,9 +1,10 @@
 node_modules/
 /lib/
-/test/
+
 custom-elements.json
 # top level source
 docs/
+build/
 *.d.ts
 *.map
 **/*.js
