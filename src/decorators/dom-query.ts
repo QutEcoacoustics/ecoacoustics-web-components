@@ -1,6 +1,6 @@
 import {PropertyDeclaration, ReactiveController, ReactiveElement} from '@lit/reactive-element';
 import {LitElement} from 'lit';
-import {ElementSelector, QueryResult} from '../helpers/element-selector';
+import {elementSelector, ElementSelector, QueryResult} from '../helpers/element-selector';
 
 /**
  * Observes any changes to the query element, and if a change occurs, will
@@ -84,21 +84,22 @@ class DomQueryController<T extends LitElement> implements ReactiveController {
  *
  * @returns A decorator function that applies the described affects.
  */
-export function domQuery<T extends LitElement>(options: PropertyDeclaration) {
+export function domQuery<T extends LitElement>(options?: PropertyDeclaration) {
   return (target: T, property: keyof T & string): void => {
     // add a converter in
     const ctor = target.constructor as typeof LitElement;
 
     // make this a property of the lit element
-    ctor.createProperty(property, options);
+    const defaultOptions = { type: String, converter: elementSelector(), ...options };
+    ctor.createProperty(property, defaultOptions);
 
-    if (!(options?.converter instanceof ElementSelector)) {
+    if (!(defaultOptions?.converter instanceof ElementSelector)) {
       throw new Error(`@domQuery can only be used on properties that have a converter of type ElementSelector`);
     }
 
     // add a controller to hook into lifecycle events
-    // we use the static .addInitializer here to avoid binding to the wrong instance here.
-    // The instance of `target`, right here in this function, is not the instance that will be used in the DOM.
+    // we use the static .addInitializer here to avoid binding to the wrong instance.
+    // The instance of `target`, right here in this decorator, is not the instance that will be used in the DOM.
     ctor.addInitializer((instance: ReactiveElement): void => {
       new DomQueryController(instance as T, property);
     });

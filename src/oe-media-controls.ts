@@ -2,7 +2,6 @@ import {css, html, LitElement} from 'lit';
 import {customElement, state} from 'lit/decorators.js';
 import {domQuery} from './decorators/dom-query';
 import {AudioWrapper} from './helpers/audio-wrapper';
-import {elementSelector} from './helpers/element-selector';
 import {WithLogging} from './mixins/LoggingElement';
 
 export enum AudioState {
@@ -42,7 +41,7 @@ export class OeMediaControls extends WithLogging(LitElement) {
    * @attr {HTMLAudioElement}
    * @prop {String}
    */
-  @domQuery<OeMediaControls>({type: String, converter: elementSelector()})
+  @domQuery<OeMediaControls>()
   for!: HTMLAudioElement | null;
 
   /** Tracks the current state of the audio player */
