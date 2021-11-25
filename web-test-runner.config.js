@@ -53,7 +53,7 @@ if (!['dev', 'prod'].includes(mode)) {
 let browsers = {
   // Local browser testing via playwright
   // ===========
-  chromium: playwrightLauncher({product: 'chromium'}),
+  chromium: playwrightLauncher({product: 'chromium', args: [ '--autoplay-policy=no-user-gesture-required' ] }),
   firefox: playwrightLauncher({product: 'firefox'}),
 
   // Uncomment example launchers for running on Sauce Labs

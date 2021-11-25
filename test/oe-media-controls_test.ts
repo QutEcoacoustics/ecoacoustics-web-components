@@ -46,7 +46,7 @@ describe('oe-media-controls', () => {
     );
   });
 
-  xdescribe('controls with bad "for" attribute', () => {
+  describe('controls with bad "for" attribute', () => {
     const missingError = 'oe-media-controls is not linked to an audio element';
     const wrongElementError = 'oe-media-controls is not linked to an an element that is not an <audio>';
 
@@ -93,7 +93,7 @@ describe('oe-media-controls', () => {
     });
   });
 
-  xdescribe('syncs with audio', () => {
+  describe('syncs with audio', () => {
     let audioElement: HTMLAudioElement;
     let mediaControls: OeMediaControls;
 
@@ -111,7 +111,7 @@ describe('oe-media-controls', () => {
     });
   });
 
-  xdescribe('attached media element playing', () => {
+  describe('attached media element playing', () => {
     let audioElement: HTMLAudioElement;
     let mediaControls: OeMediaControls;
 
@@ -150,7 +150,7 @@ describe('oe-media-controls', () => {
     });
   });
 
-  xdescribe('attached media element paused', () => {
+  describe('attached media element paused', () => {
     let audioElement: HTMLAudioElement;
     let mediaControls: OeMediaControls;
 
@@ -190,7 +190,7 @@ describe('oe-media-controls', () => {
     });
   });
 
-  xdescribe('slots', () => {
+  describe('slots', () => {
     it('should show custom play label', async () => {
       const fixture = await fixtureWithContext<OeMediaControls>(
         html`
@@ -220,7 +220,7 @@ describe('oe-media-controls', () => {
     });
   });
 
-  xdescribe('parts', () => {
+  describe('parts', () => {
     let controls: OeMediaControls;
 
     beforeEach(async () => {
