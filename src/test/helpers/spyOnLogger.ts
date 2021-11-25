@@ -7,7 +7,6 @@ export function spyOnLogger<T extends Constructor<LitElement> & Constructor<ILog
   let loggerSpy!: SinonSpiedInstance<Console>;
   const tag = defineCE(
     class extends target {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       constructor(...args: any[]) {
         super(...args);
         loggerSpy = spy(this.logger);

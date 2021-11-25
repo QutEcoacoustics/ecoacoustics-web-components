@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {dedupeMixin} from '@open-wc/dedupe-mixin';
 
 export declare class ILogging {

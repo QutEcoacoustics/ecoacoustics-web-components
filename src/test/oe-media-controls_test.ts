@@ -17,7 +17,7 @@ describe('oe-media-controls', () => {
   async function setup(): Promise<OeMediaControls> {
     return fixtureWithContext(
       html`
-        <audio id="audio" src="dev/sample.wav"></audio>
+        <audio id="audio" src="dev/sample.wav" controls></audio>
         <oe-media-controls for="audio"></oe-media-controls>
       `
     );

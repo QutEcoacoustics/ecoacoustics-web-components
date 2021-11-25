@@ -1,7 +1,7 @@
 import {css, html, LitElement} from 'lit';
-import {customElement, property, state} from 'lit/decorators.js';
+import {customElement, state} from 'lit/decorators.js';
 import {domQuery} from './decorators/dom-query';
-//import {AudioWrapper} from './helpers/audio-wrapper';
+import {AudioWrapper} from './helpers/audio-wrapper';
 import {elementSelector} from './helpers/element-selector';
 import {WithLogging} from './mixins/LoggingElement';
 
@@ -15,8 +15,15 @@ export enum AudioState {
 
 /**
  * A media control element
- *
  * TODO Full description here
+ *
+ * @attr for - ID selector which determines which audio player
+ * this element should control
+ * @slot play-label - Override for play label
+ * @slot pause-label - Override for pause label
+ * @csspart play-pause-button - CSS selector for overriding button styling
+ * @cssprop --oe-background-color - Sets a custom background colour for the
+ * element. This defaults to `unset`
  */
 @customElement('oe-media-controls')
 export class OeMediaControls extends WithLogging(LitElement) {
@@ -30,18 +37,13 @@ export class OeMediaControls extends WithLogging(LitElement) {
   ];
 
   /**
-   * ID selector which determines which audio player this element should
-   * control
+   * ID selector which determines which audio player
+   * this element should control
+   * @attr {HTMLAudioElement}
+   * @prop {String}
    */
-  @domQuery<OeMediaControls>()
-  @property({
-    type: String,
-    converter: elementSelector(),
-
-  })
-  for?: HTMLAudioElement = undefined;
-
-  // Store for id in
+  @domQuery<OeMediaControls>({type: String, converter: elementSelector()})
+  for!: HTMLAudioElement | null;
 
   /** Tracks the current state of the audio player */
   @state()
@@ -49,53 +51,51 @@ export class OeMediaControls extends WithLogging(LitElement) {
 
   /** Tracks any error messages which need to be displayed */
   @state()
-  public error: string | null = '';
+  public error?: string | null;
 
-  //private audioWrapper!: AudioWrapper;
+  private audioWrapper = new AudioWrapper();
 
-  public constructor() {
-    super();
-  }
+  public override willUpdate(_changedProperties: Map<string | number | symbol, unknown>): void {
+    super.willUpdate(_changedProperties);
 
-  public override attributeChangedCallback(name: string, old: string | null, value: string | null): void {
-    super.attributeChangedCallback(name, old, value);
+    if (!this.for) {
+      this.audioWrapper.unsubscribe();
+      this.state = AudioState.Error;
+      this.error = 'oe-media-controls is not linked to an audio element';
+      this.logger.error('oe-media-controls is not linked to an audio element');
+      return;
+    }
 
-    console.log(this.for, this.for?.isConnected);
+    // Reset state
+    this.state = AudioState.Loading;
+    this.error = null;
 
-    // if (!this.for) {
-    //   this.state = AudioState.Error;
-    //   this.error = 'oe-media-controls is not linked to an audio element';
-    //   this.logger.error('oe-media-controls is not linked to an audio element');
-    //   return;
-    // }
-    // this.state = AudioState.Loading;
-    // this.error = null;
+    // Create audio wrapper if not exists, or new audio element is created
+    if (_changedProperties.has('for')) {
+      this.audioWrapper.subscribe(this.for);
+    }
 
-    // if (!this.audioWrapper) {
-    //   this.audioWrapper = new AudioWrapper(this.for);
-    // }
-
-    // this.audioWrapper.eventUpdates().subscribe((event) => {
-    //   if (event.error) {
-    //     this.state = AudioState.Error;
-    //     this.error = event.error;
-    //   } else if (!event.canPlay) {
-    //     this.state = AudioState.Loading;
-    //   } else if (event.paused || event.ended) {
-    //     this.state = AudioState.Paused;
-    //   } else if (event.playing) {
-    //     this.state = AudioState.Playing;
-    //   }
-    // });
+    this.audioWrapper.eventUpdates().subscribe((event) => {
+      if (event.error) {
+        this.state = AudioState.Error;
+        this.error = event.error;
+      } else if (!event.canPlay) {
+        this.state = AudioState.Loading;
+      } else if (event.paused || event.ended) {
+        this.state = AudioState.Paused;
+      } else if (event.playing) {
+        this.state = AudioState.Playing;
+      }
+    });
   }
 
   public override disconnectedCallback(): void {
-    // this.audioWrapper?.destroy();
+    super.disconnectedCallback();
+    this.audioWrapper.unsubscribe();
   }
 
   public override render() {
-    console.log(this.for);
-
+    super.render();
     return html`<div>${this.error ? this.errorMessage() : this.playPauseButton()}</div>`;
   }
 
@@ -121,7 +121,7 @@ export class OeMediaControls extends WithLogging(LitElement) {
 
   /** Sub element for displaying error messages */
   private errorMessage() {
-    return html`<span class="error" title="${this.error}">${this.error}</span>`;
+    return this.error ? html`<span class="error" title="${this.error}">${this.error}</span>` : null;
   }
 
   /** Handle the click event of the play/pause button */

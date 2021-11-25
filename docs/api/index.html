@@ -139,7 +139,6 @@
        <h2>&lt;oe-media-controls></h2>
        <div>
          A media control element
-
 TODO Full description here
        </div>
        
@@ -150,8 +149,7 @@ TODO Full description here
      </tr>
      
        <tr>
-         <td>for</td><td>ID selector which determines which audio player this element should
-control</td><td>HTMLAudioElement | undefined</td><td>undefined</td>
+         <td>for</td><td>ID selector which determines which audio player this element should control</td><td>HTMLAudioElement | null</td><td></td>
        </tr>
      
    </table>
@@ -164,8 +162,8 @@ control</td><td>HTMLAudioElement | undefined</td><td>undefined</td>
      </tr>
      
        <tr>
-         <td>for</td><td>for</td><td>ID selector which determines which audio player this element should
-control</td><td>HTMLAudioElement | undefined</td><td>undefined</td>
+         <td>for</td><td>for</td><td>ID selector which determines which audio player
+this element should control</td><td>HTMLAudioElement | null</td><td></td>
        </tr>
      
        <tr>
@@ -173,7 +171,11 @@ control</td><td>HTMLAudioElement | undefined</td><td>undefined</td>
        </tr>
      
        <tr>
-         <td>error</td><td></td><td>Tracks any error messages which need to be displayed</td><td>string | null</td><td>''</td>
+         <td>error</td><td></td><td>Tracks any error messages which need to be displayed</td><td>string | null | undefined</td><td></td>
+       </tr>
+     
+       <tr>
+         <td>audioWrapper</td><td></td><td></td><td></td><td>new AudioWrapper()</td>
        </tr>
      
    </table>
@@ -196,9 +198,49 @@ control</td><td>HTMLAudioElement | undefined</td><td>undefined</td>
    </table>
  
            
-         
        
+   <h3>Slots</h3>
+   <table>
+     <tr>
+       <th>Name</th><th>Description</th>
+     </tr>
+     
+       <tr>
+         <td>play-label</td><td>Override for play label</td>
+       </tr>
+     
+       <tr>
+         <td>pause-label</td><td>Override for pause label</td>
+       </tr>
+     
+   </table>
+   
        
+   <h3>CSS Shadow Parts</h3>
+   <table>
+     <tr>
+       <th>Name</th><th>Description</th>
+     </tr>
+     
+       <tr>
+         <td>play-pause-button</td><td>CSS selector for overriding button styling</td>
+       </tr>
+     
+   </table>
+ 
+       
+   <h3>CSS Custom Properties</h3>
+   <table>
+     <tr>
+       <th>Name</th><th>Description</th>
+     </tr>
+     
+       <tr>
+         <td>--oe-background-color</td><td>Sets a custom background colour for the element. This defaults to `unset`</td>
+       </tr>
+     
+   </table>
+ 
        
    
       </main>

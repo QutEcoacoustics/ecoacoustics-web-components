@@ -4,6 +4,8 @@ node_modules/
 custom-elements.json
 # top level source
 docs/
+*.d.ts
+*.map
 **/*.js
 **/*.js.map
 **/*.d.ts

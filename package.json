@@ -10,7 +10,7 @@
     "build:watch": "tsc --watch",
     "clean": "rimraf oe-element.{d.ts,d.ts.map,js,js.map} test/oe-element.{d.ts,d.ts.map,js,js.map} test/oe-element_test.{d.ts,d.ts.map,js,js.map}",
     "lint": "npm run lint:lit-analyzer && npm run lint:eslint && npm run lint:html",
-    "lint:eslint": "eslint 'src/**/*.ts'",
+    "lint:eslint": "eslint \"src/**/*.ts\"",
     "lint:lit-analyzer": "lit-analyzer",
     "lint:html": "html-validate --ext html dev src docs-src",
     "format": "prettier \"**/*.{cjs,html,js,json,md,ts}\" --ignore-path ./.eslintignore --write",

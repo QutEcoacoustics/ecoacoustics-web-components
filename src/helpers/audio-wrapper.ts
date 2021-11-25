@@ -18,9 +18,9 @@ type AudioWrapperEvent = {event?: AudioPlayerEvent} & AudioPlayerState;
 
 // TODO Convert to controller
 export class AudioWrapper extends WithLogging(class {}) {
-  private audioElement: HTMLAudioElement;
-  private $update: Subject<AudioWrapperEvent>;
-  private currentState: AudioPlayerState;
+  private _audioElement?: HTMLAudioElement;
+  private $update?: Subject<AudioWrapperEvent>;
+  private currentState?: AudioPlayerState;
   private readyStates = {
     haveNothing: 0,
     haveMetadata: 1,
@@ -52,32 +52,42 @@ export class AudioWrapper extends WithLogging(class {}) {
     'waiting',
   ];
 
-  public constructor(audioElement?: HTMLAudioElement) {
-    super();
-    if (!audioElement) {
-      throw new Error('Audio element does not exist');
-    } else {
-      this.audioElement = audioElement;
+  /**
+   * Returns an observable which triggers whenever an event update occurs on
+   * the audio player
+   */
+  public eventUpdates(): Observable<AudioWrapperEvent> {
+    if (!this.$update) {
+      throw new Error('Must subscribe to an audio element first');
     }
+
+    return this.$update;
+  }
+
+  public subscribe(audioElement?: HTMLAudioElement): void {
+    this.audioElement = audioElement;
+
+    if (this.$update) {
+      this.unsubscribe();
+    }
+
     this.currentState = this.getState();
     this.$update = new BehaviorSubject({event: undefined, ...this.currentState} as AudioWrapperEvent);
     this.subscribeToEvents();
   }
 
   /**
-   * Returns an observable which triggers whenever an event update occurs on
-   * the audio player
-   */
-  public eventUpdates(): Observable<AudioWrapperEvent> {
-    return this.$update;
-  }
-
-  /**
    * Destroy the Audio Wrapper instance and unsubscribe all
    * observables/listeners
    */
-  public destroy(): void {
+  public unsubscribe(): void {
+    // No subscription to remove
+    if (!this._audioElement) {
+      return;
+    }
+
     this.unsubscribeFromEvents();
+    this.$update?.complete();
   }
 
   /** Subscribe to audio player events */
@@ -100,7 +110,7 @@ export class AudioWrapper extends WithLogging(class {}) {
   private updateState = (event: Event) => {
     this.logger.debug(`Audio Wrapper: event detected (${event.type ?? 'unknown'})`);
     this.currentState = {...this.currentState, ...this.getState()};
-    this.$update.next({event: event.type as AudioPlayerEvent, ...this.currentState});
+    this.$update?.next({event: event.type as AudioPlayerEvent, ...this.currentState});
   };
 
   /**
@@ -122,5 +132,19 @@ export class AudioWrapper extends WithLogging(class {}) {
       currentTime: this.audioElement.currentTime,
       error: this.audioElement.error?.message ?? null,
     };
+  }
+
+  private get audioElement(): HTMLAudioElement {
+    if (!this._audioElement) {
+      throw new Error('Audio element does not exist, call subscribe method first');
+    }
+    return this._audioElement;
+  }
+
+  private set audioElement(element: HTMLAudioElement | undefined) {
+    if (!element) {
+      throw new Error('Audio element does not exist, call subscribe method first');
+    }
+    this._audioElement = element;
   }
 }
