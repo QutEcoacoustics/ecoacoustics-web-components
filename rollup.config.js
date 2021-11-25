@@ -8,12 +8,15 @@ import summary from 'rollup-plugin-summary';
 import {terser} from 'rollup-plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
+import multiInput from 'rollup-plugin-multi-input';
+import multi from '@rollup/plugin-multi-entry';
 
-export default {
-  input: 'oe-element.js',
-  output: {
-    file: 'oe-element.bundled.js',
+const commonOptions = {
+  input: ['build/src/oe-*.js'],
+  output:{
+    dir: 'build/dist',
     format: 'esm',
+    chunkFileNames: 'oe-shared-[hash].js',
   },
   onwarn(warning) {
     if (warning.code !== 'THIS_IS_UNDEFINED') {
@@ -33,6 +36,25 @@ export default {
         },
       },
     }),
-    summary(),
-  ],
+    summary()
+  ]
 };
+
+// individual components
+const individual = Object.assign({} , commonOptions, {
+  plugins: commonOptions.plugins.concat(
+    multiInput({ relative: 'build/src/' })
+  )
+});
+
+const bundle = Object.assign({} , commonOptions, {
+  plugins: commonOptions.plugins.concat(
+    multi({ entryFileName: 'oe-components.all.js' })
+  )
+});
+
+export default [
+  individual,
+  bundle
+]
+
