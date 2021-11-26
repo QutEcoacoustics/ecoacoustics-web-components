@@ -26,6 +26,7 @@ class DomQueryController<T extends LitElement> implements ReactiveController {
   private observed(_mutations: MutationRecord[], _observer: MutationObserver): void {
     this.checkValue();
   }
+
   private checkValue(): void {
     const newValue = ElementSelector.query(this.getAttributeValue());
     const oldValue = this.getPropertyValue();
@@ -90,7 +91,7 @@ export function domQuery<T extends LitElement>(options?: PropertyDeclaration) {
     const ctor = target.constructor as typeof LitElement;
 
     // make this a property of the lit element
-    const defaultOptions = { type: String, converter: elementSelector(), ...options };
+    const defaultOptions = {type: String, converter: elementSelector(), ...options};
     ctor.createProperty(property, defaultOptions);
 
     if (!(defaultOptions?.converter instanceof ElementSelector)) {

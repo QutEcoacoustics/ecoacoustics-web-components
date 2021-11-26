@@ -5,11 +5,11 @@ import {AudioWrapper} from './helpers/audio-wrapper';
 import {WithLogging} from './mixins/LoggingElement';
 
 export enum AudioState {
+  Error,
+  Loading,
   Seeking,
   Playing,
   Paused,
-  Loading,
-  Error,
 }
 
 /**
@@ -58,11 +58,9 @@ export class OeMediaControls extends WithLogging(LitElement) {
     super.willUpdate(_changedProperties);
 
     if (!this.for) {
-      this.audioWrapper.unsubscribe();
-      this.state = AudioState.Error;
-      this.error = 'oe-media-controls is not linked to an audio element';
-      this.logger.error('oe-media-controls is not linked to an audio element');
-      return;
+      return this.setErrorState('oe-media-controls is not linked to an audio element');
+    } else if (!((this.for as HTMLElement) instanceof HTMLAudioElement)) {
+      return this.setErrorState('oe-media-controls is linked to an an element that is not an <audio>');
     }
 
     // Reset state
@@ -108,6 +106,14 @@ export class OeMediaControls extends WithLogging(LitElement) {
     this.for?.play();
   }
 
+  /** Sets an error state for the controller */
+  private setErrorState(msg: string): void {
+    this.audioWrapper.unsubscribe();
+    this.state = AudioState.Error;
+    this.error = msg;
+    this.logger.error(msg);
+  }
+
   /** Sub element for displaying play/pause button */
   private playPauseButton() {
     const label = this.isPlaying()
@@ -130,8 +136,6 @@ export class OeMediaControls extends WithLogging(LitElement) {
     } else {
       this.play();
     }
-
-    this.state = this.isPlaying() ? AudioState.Paused : AudioState.Playing;
   }
 
   /**

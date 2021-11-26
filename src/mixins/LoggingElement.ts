@@ -6,6 +6,8 @@ export declare class ILogging {
 
 export type Constructor<T extends {} = {}> = new (...args: any[]) => T;
 
+export const DefaultLogger = new Proxy(console, {});
+
 /**
  * Add logging capability to classes. This wraps the console logger so that
  * tests are capable of spying on the different logging methods.
@@ -18,7 +20,7 @@ export const WithLogging = dedupeMixin(<T extends Constructor>(superclass: T) =>
   class LoggingClass extends superclass {
     constructor(...args: any[]) {
       super(...args);
-      this.logger = console;
+      this.logger = DefaultLogger;
     }
 
     /** Logs a message to the current console provider */

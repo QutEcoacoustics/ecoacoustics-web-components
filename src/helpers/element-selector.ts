@@ -8,7 +8,7 @@ export class ElementSelector implements ComplexAttributeConverter<HTMLElement | 
       return null;
     }
 
-    return document.querySelector<HTMLElement>(selector);
+    return document.getElementById(selector);
   }
 
   public fromAttribute(value: string | null, _type?: HTMLElement): QueryResult {

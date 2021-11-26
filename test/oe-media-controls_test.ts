@@ -1,5 +1,6 @@
-import {expect, fixture} from '@open-wc/testing';
+import {expect, fixture, waitUntil} from '@open-wc/testing';
 import {html} from 'lit/static-html.js';
+import {createSandbox, SinonSpiedInstance} from 'sinon';
 import '../src/oe-media-controls';
 import {AudioState, OeMediaControls} from '../src/oe-media-controls.js';
 import {fixtureWithContext} from './helpers/fixtureQuery';
@@ -14,11 +15,29 @@ describe('oe-media-controls', () => {
     return mediaControl.parentNode?.querySelector('audio') as HTMLAudioElement;
   }
 
+  function getError(mediaControl: OeMediaControls): HTMLElement {
+    return mediaControl.shadowRoot?.querySelector('.error') as HTMLElement;
+  }
+
+  async function waitForMediaUpdate(mediaControls: OeMediaControls, state: AudioState) {
+    await waitUntil(() => mediaControls.state === state);
+  }
+
+  async function playAudioElement(mediaControls: OeMediaControls, audioElement: HTMLAudioElement) {
+    await audioElement.play();
+    await waitForMediaUpdate(mediaControls, AudioState.Playing);
+  }
+
+  async function pauseAudioElement(mediaControls: OeMediaControls, audioElement: HTMLAudioElement) {
+    audioElement.pause();
+    await waitForMediaUpdate(mediaControls, AudioState.Paused);
+  }
+
   async function setup(): Promise<OeMediaControls> {
     return fixtureWithContext(
       html`
-        <audio id="audio" src="dev/sample.wav" controls></audio>
-        <oe-media-controls for="audio"></oe-media-controls>
+        <audio id="player" src="dev/sample.wav" controls></audio>
+        <oe-media-controls for="player"></oe-media-controls>
       `
     );
   }
@@ -47,49 +66,44 @@ describe('oe-media-controls', () => {
   });
 
   describe('controls with bad "for" attribute', () => {
+    const sandbox = createSandbox();
     const missingError = 'oe-media-controls is not linked to an audio element';
-    const wrongElementError = 'oe-media-controls is not linked to an an element that is not an <audio>';
+    // Need to convert < and > so assertion wont attempt to convert <audio> to an element
+    const wrongElementError = 'oe-media-controls is linked to an an element that is not an &lt;audio&gt;';
+
+    function assertError(element: OeMediaControls, _loggerSpy: SinonSpiedInstance<Console>, error: string) {
+      const span = getError(element);
+      expect(span).dom.equal(`<span class="error" title="${error}">${error}</span>`);
+      //loggerSpy.error.calledWith(missingError);
+    }
+
+    // TODO Extract this logic to mocha global setup
+    afterEach(() => {
+      sandbox.restore();
+      sandbox.reset();
+    });
 
     it('should error if the for attribute is empty', async () => {
-      const {getSpy, tag} = spyOnLogger(OeMediaControls);
-
-      const element = await fixture(html`<${tag} for=""></${tag}>`);
-      const span = element.shadowRoot?.querySelector('.error');
-      expect(span).dom.equal(
-        `
-        <span class="error" title="${missingError}"
-        </span>
-        `
-      );
-      getSpy().error.calledWith(missingError);
+      const {getSpy, tag} = spyOnLogger(OeMediaControls, sandbox);
+      const mediaControls = await fixture<OeMediaControls>(html`<${tag} for=""></${tag}>`);
+      assertError(mediaControls, getSpy(), missingError);
     });
 
     it('should error if the for attribute is missing', async () => {
-      const {getSpy, tag} = spyOnLogger(OeMediaControls);
-
-      const element = await fixture(html`<${tag}></${tag}>`);
-      const span = element.shadowRoot?.querySelector('.error');
-      expect(span).dom.equal(
-        `
-        <span class="error" title="${missingError}"
-        </span>
-        `
-      );
-      getSpy().error.calledWith(missingError);
+      const {getSpy, tag} = spyOnLogger(OeMediaControls, sandbox);
+      const mediaControls = await fixture<OeMediaControls>(html`<${tag}></${tag}>`);
+      assertError(mediaControls, getSpy(), missingError);
     });
 
     it('should error if the for attribute is not a HTMLAudioElement', async () => {
-      const {getSpy, tag} = spyOnLogger(OeMediaControls);
-
-      const element = await fixture(html`<img id="image" /><${tag} for="image"></${tag}>`);
-      const span = element.shadowRoot?.querySelector('.error');
-      expect(span).dom.equal(
-        `
-        <span class="error" title="${wrongElementError}"
-        </span>
+      const {getSpy, tag} = spyOnLogger(OeMediaControls, sandbox);
+      const mediaControls = await fixtureWithContext<OeMediaControls>(
+        html`
+          <img id="player" />
+          <${tag} for="player"></${tag}>
         `
       );
-      getSpy().error.calledWith(wrongElementError);
+      assertError(mediaControls, getSpy(), wrongElementError);
     });
   });
 
@@ -102,12 +116,14 @@ describe('oe-media-controls', () => {
       audioElement = getAudioPlayer(mediaControls);
     });
 
-    it('should sync pausing', async () => {
-      audioElement.pause();
-      expect(mediaControls.state).to.eq(AudioState.Paused);
-
-      audioElement.play();
+    it('should sync with playing', async () => {
+      await playAudioElement(mediaControls, audioElement);
       expect(mediaControls.state).to.eq(AudioState.Playing);
+    });
+
+    it('should sync pausing', async () => {
+      await pauseAudioElement(mediaControls, audioElement);
+      expect(mediaControls.state).to.eq(AudioState.Paused, 'Media controls should show paused');
     });
   });
 
@@ -118,34 +134,37 @@ describe('oe-media-controls', () => {
     beforeEach(async () => {
       mediaControls = await setup();
       audioElement = getAudioPlayer(mediaControls);
-      mediaControls.play();
+      await playAudioElement(mediaControls, audioElement);
     });
 
-    it('verifies the state is paused', async () => {
-      expect(audioElement.paused).to.be.false('should be playing');
+    it('verifies the state is playing', async () => {
+      expect(audioElement.paused).to.be.false;
       expect(mediaControls.state).to.eq(AudioState.Playing);
     });
 
     it('should show pause label', async () => {
       const button = getPlayPauseButton(mediaControls);
-
       expect(button).to.have.text('Pause');
     });
 
     it('pause button should pause media element', async () => {
       const button = getPlayPauseButton(mediaControls);
 
-      expect(audioElement.paused).to.be.false('should be playing');
+      expect(audioElement.paused).to.be.false;
       button?.click();
-      expect(audioElement.paused).to.be.true('should be paused');
-      expect(mediaControls.state).to.eq(AudioState.Playing);
+
+      await waitForMediaUpdate(mediaControls, AudioState.Paused);
+      expect(audioElement.paused).to.be.true;
+      expect(mediaControls.state).to.eq(AudioState.Paused);
     });
 
     it('pause button should update label', async () => {
       const button = getPlayPauseButton(mediaControls);
-
       expect(button).to.have.text('Pause');
+
       button?.click();
+      await waitForMediaUpdate(mediaControls, AudioState.Paused);
+
       expect(button).to.have.text('Play');
     });
   });
@@ -157,66 +176,74 @@ describe('oe-media-controls', () => {
     beforeEach(async () => {
       mediaControls = await setup();
       audioElement = getAudioPlayer(mediaControls);
-      mediaControls.pause();
+      await pauseAudioElement(mediaControls, audioElement);
     });
 
     it('verifies the state is paused', async () => {
-      expect(audioElement.paused).to.be.true('should be paused');
+      expect(audioElement.paused).to.be.true;
       expect(mediaControls.state).to.eq(AudioState.Paused);
     });
 
     it('should show play label', async () => {
       const button = getPlayPauseButton(mediaControls);
-
       expect(button).to.have.text('Play');
     });
 
     it('play button should play media element', async () => {
       const button = getPlayPauseButton(mediaControls);
 
-      expect(audioElement.paused).to.be.true('should be paused');
+      expect(audioElement.paused).to.be.true;
 
       button?.click();
-      expect(audioElement.paused).to.be.false('should be playing');
+      expect(audioElement.paused).to.be.false;
 
       expect(mediaControls.state).to.eq(AudioState.Paused);
     });
+
     it('play button should update label', async () => {
       const button = getPlayPauseButton(mediaControls);
 
       expect(button).to.have.text('Play');
       button?.click();
+      await waitForMediaUpdate(mediaControls, AudioState.Playing);
       expect(button).to.have.text('Pause');
     });
   });
 
   describe('slots', () => {
+    function getPlayLabel(mediaControl: OeMediaControls) {
+      return mediaControl.querySelector('[slot="play-label"]');
+    }
+    function getPauseLabel(mediaControl: OeMediaControls) {
+      return mediaControl.querySelector('[slot="pause-label"]');
+    }
+
     it('should show custom play label', async () => {
-      const fixture = await fixtureWithContext<OeMediaControls>(
+      const mediaControl = await fixtureWithContext<OeMediaControls>(
         html`
           <audio id="audio" src="dev/sample.wav"></audio>
           <oe-media-controls for="audio">
-            <slot name="play-label">yalP</slot>
+            <span slot="play-label">yalP</span>
           </oe-media-controls>
         `
       );
 
-      const button = getPlayPauseButton(fixture);
-      expect(button).to.have.text('yalP');
+      const label = getPlayLabel(mediaControl);
+      expect(label).to.have.text('yalP');
     });
 
     it('should show custom pause label', async () => {
-      const fixture = await fixtureWithContext<OeMediaControls>(
+      const mediaControl = await fixtureWithContext<OeMediaControls>(
         html`
           <audio id="audio" src="dev/sample.wav"></audio>
           <oe-media-controls for="audio">
-            <slot name="pause-label">esuaP</slot>
+            <span slot="pause-label">esuaP</span>
           </oe-media-controls>
         `
       );
 
-      const button = getPlayPauseButton(fixture);
-      expect(button).to.have.text('esuaP');
+      const label = getPauseLabel(mediaControl);
+      expect(label).to.have.text('esuaP');
     });
   });
 
