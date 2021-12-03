@@ -151,3 +151,9 @@ export class OeMediaControls extends WithLogging(LitElement) {
     return this.state === AudioState.Playing;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'oe-media-controls': OeMediaControls;
+  }
+}

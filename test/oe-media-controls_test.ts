@@ -20,7 +20,12 @@ describe('oe-media-controls', () => {
   }
 
   async function waitForMediaUpdate(mediaControls: OeMediaControls, state: AudioState) {
-    await waitUntil(() => mediaControls.state === state);
+    await waitUntil(
+      () => mediaControls.state === state,
+      'Media control failed to change its state to ' + AudioState[state],
+      // TODO This is a dumb amount of timeout, remove once rxjs import tree shaking is fixed
+      {timeout: 60000}
+    );
   }
 
   async function playAudioElement(mediaControls: OeMediaControls, audioElement: HTMLAudioElement) {

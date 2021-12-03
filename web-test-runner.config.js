@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import {chromeLauncher} from '@web/test-runner';
 import {legacyPlugin} from '@web/dev-server-legacy';
 import {playwrightLauncher} from '@web/test-runner-playwright';
 
@@ -53,8 +54,11 @@ if (!['dev', 'prod'].includes(mode)) {
 let browsers = {
   // Local browser testing via playwright
   // ===========
-  chromium: playwrightLauncher({product: 'chromium', args: [ '--autoplay-policy=no-user-gesture-required' ] }),
-  firefox: playwrightLauncher({product: 'firefox'}),
+  chromium: playwrightLauncher({
+    product: 'chromium',
+    args: ['--autoplay-policy=no-user-gesture-required'],
+  }),
+  // firefox: playwrightLauncher({product: 'firefox', args: [ '--' ]}),
 
   // Uncomment example launchers for running on Sauce Labs
   // ===========
@@ -85,9 +89,7 @@ const noBrowser = (b) => {
 };
 let commandLineBrowsers;
 try {
-  commandLineBrowsers = process.env.BROWSERS?.split(',').map(
-    (b) => browsers[b] ?? noBrowser(b)
-  );
+  commandLineBrowsers = process.env.BROWSERS?.split(',').map((b) => browsers[b] ?? noBrowser(b));
 } catch (e) {
   console.warn(e);
 }
@@ -98,12 +100,25 @@ export default {
   files: ['./build/test/**/*_test.js'],
   nodeResolve: {exportConditions: mode === 'dev' ? ['development'] : []},
   preserveSymlinks: true,
-  browsers: commandLineBrowsers ?? Object.values(browsers),
+  headless: false,
+  browsers: [
+    chromeLauncher({
+      launchOptions: {
+        args: [
+          '--no-sandbox',
+          '--disable-features=PreloadMediaEngagementData,AutoplayIgnoreWebAudio,MediaEngagementBypassAutoplayPolicies',
+          '--autoplay-policy=no-user-gesture-required',
+        ],
+      },
+    }),
+  ],
   testFramework: {
     // https://mochajs.org/api/mocha
     config: {
       // suite vs describe === 'tdd' vs 'bdd'
       ui: 'bdd',
+      // TODO This is a dumb amount of timeout, remove once rxjs import tree shaking is fixed
+      timeout: '60000',
     },
   },
   plugins: [
