@@ -4,11 +4,24 @@
   <head>
     <meta charset="utf-8" />
     <title>&lt;oe-element&gt; Demo</title>
+
+    <!--
+      Prod Start
+      <script src="assets/webcomponents-loader-97836d09.js"></script>
+      <script src="assets/polyfill-support-9bc7af0b.js"></script>
+      <script type="module" src="oe-shared-bc0d4161.js"></script>
+      <script type="module" src="oe-components.all.js"></script>
+      Prod End
+    -->
+
+    <!-- Dev Start-->
     <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../node_modules/lit/polyfill-support.js"></script>
     <script type="module" src="../build/src/oe-element.js"></script>
     <script type="module" src="../build/src/oe-media-controls.js"></script>
     <base href="dev/" />
+    <!-- Dev End -->
+
     <style>
       p {
         border: solid 1px blue;
@@ -23,7 +36,7 @@
 
     <div>
       <h1>Media Controls</h1>
-      <audio id="audio" src="sample.wav" controls></audio>
+      <audio id="audio" src="assets/sample.wav" controls></audio>
 
       <hr />
 

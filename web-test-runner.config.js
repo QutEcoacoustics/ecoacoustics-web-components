@@ -105,7 +105,6 @@ export default {
     chromeLauncher({
       launchOptions: {
         args: [
-          '--no-sandbox',
           '--disable-features=PreloadMediaEngagementData,AutoplayIgnoreWebAudio,MediaEngagementBypassAutoplayPolicies',
           '--autoplay-policy=no-user-gesture-required',
         ],
