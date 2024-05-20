@@ -4,7 +4,7 @@ import { axesStyles } from "./css/style";
 import { Signal, SignalWatcher } from "@lit-labs/preact-signals";
 import { Spectrogram } from "../../../playwright";
 import { AbstractComponent } from "../../mixins/abstractComponent";
-import { Hertz, TemporalScale, FrequencyScale, Pixel, Seconds, IScale } from "../../models/unitConverters";
+import { Hertz, TemporalScale, FrequencyScale, Pixel, Seconds, UnitConverter } from "../../models/unitConverters";
 import { RenderCanvasSize, RenderWindow } from "../../models/rendering";
 import { booleanConverter } from "../../helpers/attributes";
 import { queryDeeplyAssignedElements } from "../../helpers/decorators";
@@ -79,9 +79,10 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
   @queryDeeplyAssignedElements({ selector: "oe-spectrogram" })
   private spectrogram!: Spectrogram;
 
-  private scales!: Signal<IScale>;
   private renderWindow!: Signal<RenderWindow>;
   private canvasShape!: Signal<RenderCanvasSize>;
+
+  private unitConverter!: UnitConverter;
 
   // font size is the size of the font
   // while label padding is the minimum additional distance between the labels
@@ -92,11 +93,10 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
 
   // TODO: We should only extract the UC out of the spectrogram element
   private handleSlotchange(): void {
-    this.scales = this.spectrogram.unitConverters!.renderWindowScale;
+    this.unitConverter = this.spectrogram.unitConverters!;
+
     this.renderWindow = this.spectrogram.renderWindow;
     this.canvasShape = this.spectrogram.renderCanvasSize;
-
-    console.log("new canvas size", this.canvasShape);
   }
 
   private createAxis(
@@ -185,19 +185,19 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
   }
 
   private xAxis() {
-    const step = this.xStepOverride || this.calculateStep(this.scales.value.temporal);
+    const step = this.xStepOverride || this.calculateStep(this.unitConverter.renderWindowScale.value.temporal);
 
     const values = this.generateAxisValues(
       this.renderWindow.value.startOffset,
       this.renderWindow.value.endOffset,
       step,
-      this.scales.value.temporal,
+      this.unitConverter.renderWindowScale.value.temporal,
     );
 
     return this.createAxis(
       "x",
       values,
-      this.scales.value.temporal,
+      this.unitConverter.renderWindowScale.value.temporal,
       (x) => x.toFixed(1),
       this.xLabel,
       // TODO: This is incorrect, but it works for the demo
@@ -206,19 +206,19 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
   }
 
   private yAxis() {
-    const step = this.yStepOverride || this.calculateStep(this.scales.value.frequency);
+    const step = this.yStepOverride || this.calculateStep(this.unitConverter.renderWindowScale.value.frequency);
 
     const values = this.generateAxisValues(
       this.renderWindow.value.lowFrequency,
       this.renderWindow.value.highFrequency,
       step,
-      this.scales.value.frequency,
+      this.unitConverter.renderWindowScale.value.frequency,
     );
 
     return this.createAxis(
       "y",
       values,
-      this.scales.value.frequency,
+      this.unitConverter.renderWindowScale.value.frequency,
       (x) => x.toFixed(0),
       this.yLabel,
       this.canvasShape.value.height,
