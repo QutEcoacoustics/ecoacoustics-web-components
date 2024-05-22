@@ -32,9 +32,6 @@ importers:
       music-metadata-browser:
         specifier: ^2.5.10
         version: 2.5.10
-      webfft:
-        specifier: ^1.0.3
-        version: 1.0.3
     devDependencies:
       '@11ty/eleventy':
         specifier: 3.0.0-alpha.10
@@ -2395,9 +2392,6 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
-
-  webfft@1.0.3:
-    resolution: {integrity: sha512-Xi9V1yiKuxJvfo9TysWs17C4++7c62KSr1uS9WKj6o3ZMVJdxkoT301qltym0hZxvSU0+8tWuGF1FHNdeP158g==}
 
   which-typed-array@1.1.15:
     resolution: {integrity: sha512-oV0jmFtUky6CXfkqehVvBP/LSWJ2sy4vWMioiENyJLePrBO/yKyV9OyJySfAKosh+RYkIl5zJCNZ8/4JncrpdA==}
@@ -4911,8 +4905,6 @@ snapshots:
       '@vue/shared': 3.4.27
     optionalDependencies:
       typescript: 5.4.5
-
-  webfft@1.0.3: {}
 
   which-typed-array@1.1.15:
     dependencies:
