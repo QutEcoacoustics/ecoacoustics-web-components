@@ -7,6 +7,7 @@ export const verificationGridStyles = css`
 
   #highlight-box {
     position: absolute;
+    display: none;
     top: 0px;
     left: 0px;
     width: 0px;

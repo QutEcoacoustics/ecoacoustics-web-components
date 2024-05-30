@@ -94,7 +94,7 @@ export class Decision extends AbstractComponent(LitElement) {
     const additionalTagsTemplate = this.additionalTags ? html`<br />(${this.additionalTags})` : nothing;
     const keyboardLegend =
       this.shortcut && this.selectionMode === "desktop"
-        ? html`<br /><kbd class="keyboard-legend" part="keyboard-legend">${this.shortcut.toUpperCase()}</kbd>`
+        ? html`<br /><kbd>${this.shortcut.toUpperCase()}</kbd>`
         : nothing;
 
     return html`
