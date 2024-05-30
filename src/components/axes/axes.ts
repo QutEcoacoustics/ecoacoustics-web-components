@@ -57,7 +57,7 @@ import { theming } from "../../helpers/themes/theming";
  */
 @customElement("oe-axes")
 export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
-  public static styles = [axesStyles, theming];
+  public static styles = [theming, axesStyles];
 
   @property({ attribute: "x-step", type: Number, reflect: true })
   public xStepOverride: Seconds | undefined;
@@ -66,7 +66,7 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
   public yStepOverride: Hertz | undefined;
 
   @property({ attribute: "x-label", type: String, reflect: true })
-  public xLabel = "Time (seconds)";
+  public xLabel = "Time (Seconds)";
 
   @property({ attribute: "y-label", type: String, reflect: true })
   public yLabel = "Frequency (KHz)";
@@ -212,7 +212,7 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
           x="${xPos - this.labelPadding}"
           y="${yPos}"
         >
-          ${value / 1_000}
+          ${(value / 1_000).toFixed(1)}
         </text>
       </g>`;
     };

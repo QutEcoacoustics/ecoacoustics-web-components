@@ -19,7 +19,7 @@
                 </oe-axes>
                 <oe-info-card></oe-info-card>
                 <oe-media-controls class="media-controls" for="spectrogram"
-                    style="position: absolute; top: 3rem; right: 3rem; border-radius: 9999px; z-index: 99; padding: 0px; zoom: 0.65;"></oe-media-controls>
+                    style="position: absolute; top: 3rem; right: 3rem; border-radius: 9999px; z-index: 1; padding: 0px; zoom: 0.65;"></oe-media-controls>
             </template>
 
             <oe-decision verified="true" tag="koala" additional-tags="female" shortcut="H">Koala</oe-decision>
@@ -37,6 +37,14 @@
     <style>
         body {
             margin: 0px;
+        }
+
+        #grid-host {
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            width: 100vw;
+            height: 100vh;
         }
 
         .media-controls {

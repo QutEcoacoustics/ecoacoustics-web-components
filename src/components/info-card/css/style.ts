@@ -11,6 +11,7 @@ export const infoCardStyle = css`
     color: var(--oe-info-color);
     background-color: var(--oe-info-background-color);
     border-radius: var(--oe-border-rounding);
+    font-size: 0.8rem;
 
     /* TODO: This is a hack to get around the axes component being incorrectly sized */
     margin-top: 1rem;

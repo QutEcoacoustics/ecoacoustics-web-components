@@ -6,6 +6,7 @@ import { theming } from "../../helpers/themes/theming";
 import { consume } from "@lit/context";
 import { gridTileContext } from "../verification-grid-tile/verification-grid-tile";
 import { Verification, VerificationSubject } from "../../models/verification";
+import { classMap } from "lit/directives/class-map.js";
 
 @customElement("oe-info-card")
 export class InfoCard extends AbstractComponent(LitElement) {
@@ -67,7 +68,7 @@ export class InfoCard extends AbstractComponent(LitElement) {
     const subject: VerificationSubject | undefined = this.model?.subject;
 
     return html`
-      <div class="card-container">
+      <div class="card-container ${classMap({ expanded: this.showExpanded })}">
         ${this.subjectTemplate(subject)}
 
         <hr />

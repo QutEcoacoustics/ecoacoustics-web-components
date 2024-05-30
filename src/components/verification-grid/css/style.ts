@@ -18,10 +18,12 @@ export const verificationGridStyles = css`
     border: solid 2px #002299;
     border-radius: 1rem;
     opacity: 0.3;
+    z-index: 5;
   }
 
   .verification-container {
     background-color: var(--oe-background-color);
+    height: 100%;
 
     /* TODO: see if this is the correct solution */
     user-select: none;

@@ -15,8 +15,8 @@ export const theming = css`
     --oe-accent-color: #f7f7fa;
     --oe-accent-background-color: #f6f0f4;
 
-    --oe-info-color: #f7f7fa;
-    --oe-info-background-color: #363080;
+    --oe-info-color: var(--oe-text-color);
+    --oe-info-background-color: #e7def7;
 
     --oe-hover-color: #f6f0f4;
     --oe-hover-background-color: #f7f7fa;
@@ -46,12 +46,16 @@ export const theming = css`
   }
 
   kbd {
+    position: relative;
+    display: inline-block;
     color: var(--oe-text-color);
     font-family: "Courier New", Courier, monospace;
     text-align: center;
     font-weight: bold;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    z-index: 0;
+    margin-top: 0.2rem;
 
     &::before {
       content: "";
@@ -60,30 +64,30 @@ export const theming = css`
       left: 0px;
       width: 100%;
       height: 100%;
+      border-radius: 0.13em;
+      background: radial-gradient(circle farthest-corner at top right, #ededed, #c8c8c8);
+      box-shadow: 0px 0px 0.13em 0.1em rgba(0, 0, 0, 0.2);
       z-index: -1;
-      border-radius: var(--oe-border-rounding);
-      background: radial-gradient(circle farthest-corner at top right, #ececec, #cacaca);
-      box-shadow: 2px 2px 4px 4px rgba(0, 0, 0, 0.2);
     }
 
     &::after {
       content: "";
       position: absolute;
-      top: -2px;
-      left: -2px;
+      top: -0.065em;
+      left: -0.065em;
       width: 100%;
       height: 100%;
-      padding: 3px;
+      padding: 0.13em;
+      border-radius: 0.15em;
+      background: radial-gradient(circle farthest-corner at bottom right, #cacaca, #cacaca);
+      box-shadow: 0.065em 0.065em 0.13em 0.13em rgba(0, 0, 0, 0.5);
       z-index: -2;
-      background-color: #bebebe;
-      border-radius: var(--oe-border-rounding);
-      box-shadow: 1px 1px 2px 2px rgba(0, 0, 0, 0.5);
     }
   }
 
   a {
     text-decoration: underline;
-    color: white;
+    color: var(--oe-primary-color);
 
     &:hover {
       text-decoration: none;
@@ -91,6 +95,13 @@ export const theming = css`
 
     &:visited {
     }
+  }
+
+  hr {
+    border: 0;
+    height: 1px;
+    background-color: var(--oe-text-color);
+    opacity: 0.2;
   }
 
   .hidden {
@@ -104,7 +115,6 @@ export const theming = css`
     border-radius: var(--oe-border-rounding);
     margin: 0.1rem;
     font-size: 0.9rem;
-    font-family: var(--oe-font-family);
     box-shadow: 4px 4px 8px var(--oe-primary-background-color);
     padding: 1rem;
     padding-left: 2rem;
@@ -125,7 +135,6 @@ export const theming = css`
     border-radius: var(--oe-border-rounding);
     margin: 0.1rem;
     font-size: 0.9rem;
-    font-family: var(--oe-font-family);
     box-shadow: 4px 4px 8px var(--oe-secondary-background-color);
     padding: 1rem;
     padding-left: 2rem;
