@@ -1,77 +1,57 @@
-import { SignalWatcher } from "@lit-labs/preact-signals";
+import { computed, ReadonlySignal, watch } from "@lit-labs/preact-signals";
 import { html, LitElement } from "lit";
-import { customElement, query, queryAssignedElements } from "lit/decorators.js";
+import { customElement } from "lit/decorators.js";
 import { AbstractComponent } from "../../mixins/abstractComponent";
 import { indicatorStyles } from "./css/style";
 import { Spectrogram } from "../spectrogram/spectrogram";
 import { UnitConverter } from "../../models/unitConverters";
+import { queryDeeplyAssignedElement } from "../../helpers/decorators";
 
 /**
  * A red line that displays the playback position on a spectrogram
  *
  * @csspart indicator-line - A css target to style the indicator line
+ * @csspart seek-circle - A css target to style the seek icon underneath the indicator line
  *
  * @slot - A spectrogram component to add an indicator to
  */
 @customElement("oe-indicator")
-export class Indicator extends SignalWatcher(AbstractComponent(LitElement)) {
+export class Indicator extends AbstractComponent(LitElement) {
   public static styles = indicatorStyles;
 
-  @query("#indicator-line")
-  private indicatorLine!: SVGLineElement;
-
-  @queryAssignedElements()
-  private slotElements!: HTMLElement[];
+  @queryDeeplyAssignedElement({ selector: "oe-spectrogram" })
+  private spectrogram: Spectrogram | undefined;
 
   public xPos = 0;
-  private time = 0;
-  private offset = 0;
   private unitConverter!: UnitConverter;
 
+  private computedTimePx: ReadonlySignal<number> = computed(() => 0);
+
   public handleSlotChange(): void {
-    const spectrogram = this.getSpectrogramElement();
+    if (this.spectrogram) {
+      this.unitConverter = this.spectrogram.unitConverters!;
 
-    this.offset = spectrogram.offset;
-    this.unitConverter = spectrogram.unitConverters!;
-
-    spectrogram.currentTime.subscribe((elapsedTime: number) => {
-      this.updateIndicator(elapsedTime);
-    });
-  }
-
-  public updateIndicator(elapsedTime: number): void {
-    this.time = elapsedTime + this.offset;
-    const scale = this.unitConverter.renderWindowScale.value.temporal;
-
-    this.xPos = scale(this.time);
-
-    this.indicatorLine.style.transform = `translateX(${this.xPos}px)`;
-  }
-
-  // TODO: I think there might be a better way to do this using a combination of
-  // the queryAssignedElements() and query() decorators
-  private getSpectrogramElement(): Spectrogram {
-    for (const slotElement of this.slotElements) {
-      if (slotElement instanceof Spectrogram) {
-        return slotElement;
-      }
-
-      const queriedElement = slotElement.querySelector("oe-spectrogram");
-      if (queriedElement instanceof Spectrogram) {
-        return queriedElement;
-      } else {
-        throw new Error("oe-spectrogram is not defined");
-      }
+      this.computedTimePx = computed(() => {
+        const time = this.spectrogram!.currentTime;
+        const scale = this.unitConverter.renderWindowScale.value.temporal;
+        return scale(time);
+      });
     }
 
-    throw new Error("No spectrogram element found");
+    // TODO: This was here originally to handle when the spectrogram resizes
+    // this.spectrogram.unitConverters?.renderWindowScale.subscribe(() => {
+    //   this.updateIndicator(this.time);
+    // });
   }
 
   public render() {
     return html`
       <div id="wrapped-element">
         <svg id="indicator-svg">
-          <line id="indicator-line" part="indicator-line" y1="0" y2="100%"></line>
+          <g id="indicator-line" style="transform: translateX(${watch(this.computedTimePx)}px)">
+            <line part="indicator-line" y1="0" y2="100%"></line>
+            <circle id="seek-icon" part="seek-icon" cy="100%" r="5" />
+          </g>
         </svg>
         <slot @slotchange="${this.handleSlotChange}"></slot>
       </div>
