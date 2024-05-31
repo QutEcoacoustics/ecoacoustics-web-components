@@ -3,6 +3,22 @@ import { css } from "lit";
 // TODO: these should use computed values
 export const theming = css`
   :host {
+    /*
+      The theme is derived from the source color, hue, chrome, and tone
+      therefore, if you want to change the theme of the components, it is
+      recommended that you modify these variables so that the theme auto adjusts
+      and maintains a good colour ratio and contrast.
+
+      If you want to set the other variables manually e.g. --oe-primary-color
+      you can, but changing these colors can lead to accessability and contrast
+      issues
+    */
+    --oe-source-color: #f6f0f4;
+    --oe-source-hue: 206.93deg;
+    --oe-source-chroma: 100%;
+    --oe-source-tone: 24.9%;
+
+    /* Modify these variables below if you are an expert user */
     --oe-primary-color: hsl(206.93deg, 100%, 24.9%);
     --oe-primary-background-color: #f7f7fa;
 

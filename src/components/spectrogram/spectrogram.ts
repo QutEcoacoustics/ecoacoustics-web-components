@@ -10,6 +10,7 @@ import { AbstractComponent } from "../../mixins/abstractComponent";
 import { AudioHelper } from "../../helpers/audio/audio";
 import { WindowFunctionName } from "fft-windowing-ts";
 import { IAudioInformation, SpectrogramOptions } from "../../helpers/audio/models";
+import { booleanConverter } from "../../helpers/attributes";
 
 export type SpectrogramCanvasScale = "stretch" | "natural" | "original";
 
@@ -51,7 +52,7 @@ const defaultAudioModel = new AudioModel({
 export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
   public static styles = spectrogramStyles;
 
-  // must be in the format startOffset, lowFrequency, endOffset, highFrequency
+  // must be in the format window="startOffset, lowFrequency, endOffset, highFrequency"
   @property({ type: String, attribute: "window", reflect: true })
   public domRenderWindow?: string;
 
@@ -70,7 +71,7 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
   @property({ type: Number, attribute: "window-overlap" })
   public windowOverlap = 0;
 
-  @property({ type: Boolean, attribute: "mel-scale" })
+  @property({ type: Boolean, attribute: "mel-scale", converter: booleanConverter })
   public melScale = false;
 
   @property({ type: String, attribute: "color-map" })
