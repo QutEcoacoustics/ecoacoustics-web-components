@@ -24,8 +24,9 @@ export const verificationGridStyles = css`
   .verification-container {
     background-color: var(--oe-background-color);
     height: 100%;
+  }
 
-    /* TODO: see if this is the correct solution */
+  .verification-grid {
     user-select: none;
   }
 
@@ -61,5 +62,6 @@ export const verificationGridStyles = css`
     align-items: center;
     gap: 1rem;
     color: var(--text-color);
+    align-items: stretch;
   }
 `;
