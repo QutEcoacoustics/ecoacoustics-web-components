@@ -152,6 +152,8 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
     `;
   }
 
+  // TODO: We should probably refactor this so that we only calculate the font size
+  // once per each unique length of strings
   private createAxisLabels(xValues: Seconds[], yValues: Hertz[], scale: IScale, canvasSize: Size) {
     const xTitleFontSize = this.calculateFontSize(this.xLabel);
     // const yTitleFontSize = this.calculateFontSize(this.yLabel);
@@ -162,8 +164,6 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
     // This is unlike the x-axis where the font will always have the same height, regardless of how many digits
     // Therefore, we have to get the number of digits in the largest number in the y-axis, then position the y-axis
     // label assuming at a fixed amount away from the largest theoretical axis label
-    // TODO: We could probably do this more clever with an intersection observer or measuring the width of the proposed
-    //       label, and get the number of digits that the proposed title will have to clear
     const xTitleOffset = xTitleFontSize.height + this.tickSize + this.titleOffset + this.labelPadding;
     const yTitleOffset = fontSize.width + this.tickSize + this.titleOffset + this.labelPadding;
 
@@ -374,4 +374,8 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
       </div>
     `;
   }
+
+  // TODO: the canvas that we use to calculate the font width/height should be
+  // cached as a static field
+  public static fontCanvas: HTMLCanvasElement = document.createElement("canvas");
 }

@@ -3,13 +3,13 @@ import { AudioModel } from "./recordings";
 import { computed, Signal } from "@lit-labs/preact-signals";
 import { hertzToMels } from "../helpers/audio/mel";
 
-export type ScaleDomain<T> = [T, T];
-export type ScaleRange<T> = [T, T];
-
 export type Seconds = number;
 export type Hertz = number;
 export type Pixel = number;
 export type Sample = number;
+
+export type ScaleDomain<T> = [T, T];
+export type ScaleRange<T> = [T, T];
 
 export type TemporalScale = CustomScale<Seconds>;
 export type FrequencyScale = CustomScale<Hertz>;
@@ -48,12 +48,18 @@ export class UnitConverter {
 
   public nyquist = computed(() => this.audioModel.value.sampleRate / 2);
 
+  public scaleX: Signal<TemporalScale> = computed(() => {});
+
+  public scaleXInvert: Signal<InvertScale<Seconds>> = computed(() => {});
+
+  public scaleY: Signal<FrequencyScale> = computed(() => {});
+
+  public scaleYInvert: Signal<InvertScale<Hertz>> = computed(() => {});
+
   // TODO: The scales constant should be a class property so that when preact
   // diffs the computed signal, it will compare against a value (not a property)
   public renderWindowScale = computed<IScale>(() => {
     const frequencyInterpolator = this.melScale.value ? hertzToMels : (value: Hertz): Hertz => value;
-
-    console.log("use mel scale", this.melScale.value);
 
     const temporalMin = this.renderWindow.value.startOffset;
     const temporalMax = this.renderWindow.value.endOffset;
@@ -77,6 +83,11 @@ export class UnitConverter {
     const temporalScale = (value: Seconds): Pixel => value * temporalMagnitude + temporalMin;
     const temporalInvert = (value: Pixel): Seconds => (value - temporalMin) / temporalMagnitude;
 
+    // const { scale: temporalScale, invert: temporalInvert } = this.createMathematicalFunction(
+    //   temporalMagnitude,
+    //   temporalMin,
+    // );
+
     // TODO: the reason why I have canvasSize.height in these scale functions is because my math is incorrect
     // the largest frequency value should correspond to the smallest pixel value
     // while the smallest frequency value should correspond to the largest pixel value
@@ -86,6 +97,11 @@ export class UnitConverter {
       frequencyInterpolator(value) * frequencyMagnitude + frequencyMin + this.canvasSize.value.height;
     const frequencyInvert = (value: Pixel): Hertz =>
       (frequencyInterpolator(value) - frequencyMin) / frequencyMagnitude - this.canvasSize.value.height;
+
+    // const { scale: frequencyScale, invert: frequencyInvert } = this.createMathematicalFunction(
+    //   frequencyMagnitude,
+    //   frequencyMin,
+    // );
 
     const temporal: TemporalScale = {
       scale: temporalScale,
@@ -106,4 +122,23 @@ export class UnitConverter {
       frequency,
     };
   });
+
+  private createMathematicalFunction(
+    magnitude: number,
+    c: number,
+  ): { scale: (...x: any[]) => any; invert: (...x: any[]) => any } {
+    const scale = (value: number): Pixel => (value as number) * magnitude + c;
+    const invert = (value: Pixel): number => (value - c) / magnitude;
+
+    return {
+      scale,
+      invert,
+    };
+  }
+
+  // calculate the magnitude of a linear function using
+  // (y_2 - y_1) / (x_2 - x_1)
+  private calculateMagnitude<T extends number>(domain: ScaleDomain<T>, range: ScaleRange<T>): number {
+    return (range[1] - range[0]) / (domain[1] - domain[0]);
+  }
 }

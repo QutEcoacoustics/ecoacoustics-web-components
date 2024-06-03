@@ -37,11 +37,6 @@ export class Indicator extends AbstractComponent(LitElement) {
         return scale.scale(time.value);
       });
     }
-
-    // TODO: This was here originally to handle when the spectrogram resizes
-    // this.spectrogram.unitConverters?.renderWindowScale.subscribe(() => {
-    //   this.updateIndicator(this.time);
-    // });
   }
 
   public render() {
