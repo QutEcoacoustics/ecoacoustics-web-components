@@ -13,6 +13,7 @@ import { VerificationParser } from "../../services/verificationParser";
 export type SelectionObserverType = "desktop" | "tablet";
 export type PageFetcher = (elapsedItems: number) => Promise<any[]>;
 type SelectionEvent = CustomEvent<{ shiftKey: boolean; ctrlKey: boolean; index: number }>;
+type DecisionEvent = CustomEvent<{ value: boolean; tag: string; additionalTags: string[] }>;
 
 /**
  * A verification grid component that can be used to validate and verify audio events
@@ -300,33 +301,37 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     }
   }
 
-  // TODO: add stricter typing here
-  private catchDecision(event: CustomEvent) {
+  private catchDecision(event: DecisionEvent) {
     const decision: boolean = event.detail.value;
-    const tag: any = event.detail.tag;
+    const tags: any[] =
+      event.detail.tag === "*"
+        ? this.decisionElements.map((model: Decision) => model.tag).filter((tag: any) => tag !== "*")
+        : [event.detail.tag];
     const additionalTags: any[] = event.detail.additionalTags;
 
-    // TODO: Fix this
     const gridTiles = Array.from(this.gridTiles);
     const subSelection = gridTiles.filter((tile) => tile.selected);
     const hasSubSelection = subSelection.length > 0;
 
-    const value: Verification[] = hasSubSelection
-      ? subSelection.map((tile) => tile.model)
-      : gridTiles.map((tile) => tile.model);
+    const selectedItems = hasSubSelection ? subSelection : gridTiles;
+    const selectedTiles = selectedItems.map((tile) => tile.model);
+    const value: Verification[] = [];
 
-    value.map((model: Verification) => {
-      // TODO: remove this
-      if (!model) return;
-
-      model.additionalTags = additionalTags;
-      model.confirmed = decision;
-      model.tag = { id: undefined, text: tag };
-    });
-
-    this.dispatchEvent(new CustomEvent("decision-made", { detail: value }));
+    for (const tag of tags) {
+      for (const tile of selectedTiles) {
+        value.push(
+          new Verification({
+            ...tile,
+            tag: { id: undefined, text: tag },
+            confirmed: decision,
+            additionalTags: additionalTags ?? [],
+          }),
+        );
+      }
+    }
 
     this.decisions.push(...value);
+    this.dispatchEvent(new CustomEvent("decision-made", { detail: value }));
 
     this.removeSubSelection();
 

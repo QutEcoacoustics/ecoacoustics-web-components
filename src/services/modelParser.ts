@@ -16,8 +16,6 @@ export abstract class ModelParser<T> {
   protected static deriveModel(original: Record<string, any>, transformer: Transformer): Record<string, unknown> {
     const model: Record<string, unknown> = {};
 
-    console.log("original", original, "transformer", transformer);
-
     for (const [target, candidateKeys] of Object.entries(transformer)) {
       for (const candidateKey of candidateKeys) {
         if (original[candidateKey]) {

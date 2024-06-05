@@ -33,13 +33,14 @@
             This should probably use a data service.
             This service would
         -->
-        <oe-data-source for="verification-grid" src="/grid-items.csv" local></oe-data-source>
+        <oe-data-source for="verification-grid" src="/grid-items.csv"></oe-data-source>
     </div>
 
     <button onclick="changeVerificationGridSize();">Change explicit grid size</button>
     <button onclick="changeVerificationKey();">Create Key Error</button>
     <button onclick="changeGridSize();">Change verification grid host size</button>
     <button onclick="changeSelectionBehavior();">Change selection behavior</button>
+    <button onclick="changeCallback();">Use custom callback</button>
 
     <style>
         body {
@@ -47,7 +48,7 @@
         }
 
         #grid-host {
-            position: absolute;
+            position: relative;
             left: 0px;
             top: 0px;
             width: 100vw;
@@ -68,6 +69,27 @@
                 hostElement.style.width = "70%";
                 hostElement.style.left = "15%";
             }
+        }
+
+        function changeCallback() {
+            const dataSourceElement = document.querySelector("oe-data-source");
+
+            if (dataSourceElement) {
+                dataSourceElement.outerHTML = "";
+            }
+
+            verificationGridElement.getPage = () => {
+                return new Promise((resolve) => {
+                    resolve([
+                        { url: "/example.flac" },
+                        { url: "/example.flac" },
+                        { url: "/example.flac" },
+                        { url: "/example.flac" },
+                        { url: "/example.flac" },
+                        { url: "/example.flac" },
+                    ]);
+                });
+            };
         }
 
         function changeSelectionBehavior() {

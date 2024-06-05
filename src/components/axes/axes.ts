@@ -118,24 +118,30 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
     // draw a border around the element
     const shouldShowGridLine = (i: number, values: any[]) => i > 0 && i < values.length - 1;
 
-    // TODO: don't recompute the x position twice
-    const xGridLine = (value: Seconds) =>
-      svg`<line
-        x1="${this.unitConverter.scaleX.value(value)}"
-        x2="${this.unitConverter.scaleX.value(value)}"
+    const xGridLine = (value: Seconds) => {
+      // we pull out xPos to a variable because we use it twice (without modification)
+      // for the lines x1 and x2 position
+      // by pulling it out to a separate variable, we can avoid recalculating the value twice
+      const xPos = this.unitConverter.scaleX.value(value);
+      return svg`<line
+        x1="${xPos}"
+        x2="${xPos}"
         y1="0"
         y2="${canvasSize.height}"
         class="grid-line"
       ></line>`;
+    };
 
-    const yGridLine = (value: Hertz) =>
-      svg`<line
+    const yGridLine = (value: Hertz) => {
+      const yPos = this.unitConverter.scaleY.value(value);
+      return svg`<line
         x1="0"
         x2="${canvasSize.width}"
-        y1="${this.unitConverter.scaleY.value(value)}"
-        y2="${this.unitConverter.scaleY.value(value)}"
+        y1="${yPos}"
+        y2="${yPos}"
         class="grid-line"
       ></line>`;
+    };
 
     const xAxisGridLines = svg`${xValues.map(
       (value, i) => svg`${shouldShowGridLine(i, xValues) && xGridLine(value)}`,

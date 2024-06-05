@@ -182,9 +182,9 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
             bubbles: true,
           }),
         );
-
-        this.doneFirstRender = true;
       });
+
+    this.doneFirstRender = true;
   }
 
   public regenerateSpectrogram(): void {
