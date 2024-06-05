@@ -267,6 +267,7 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
     return { width: entry.clientWidth, height: entry.clientHeight };
   }
 
+  // TODO: parents should not contribute to the size of the canvas
   private handleResize(entries: ResizeObserverEntry[]): void {
     if (entries.length === 0) return;
 
@@ -383,6 +384,13 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
         }
       }
 
+      const newProposedTime = mediaElementTime + exactTimeDelta;
+      if (newProposedTime >= this.audio.value.duration) {
+        this.currentTime.value = this.audio.value.duration;
+        this.pause();
+        return;
+      }
+
       this.currentTime.value = mediaElementTime + exactTimeDelta;
 
       this.nextRequestId = requestAnimationFrame(() =>
@@ -407,6 +415,11 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
     if (this.paused == this.mediaElement?.paused) return;
 
     if (this.paused) {
+      // TODO: find out if we actually need this
+      if (this.nextRequestId) {
+        window.cancelAnimationFrame(this.nextRequestId);
+      }
+
       this.mediaElement?.pause();
     } else {
       this.mediaElement?.play();

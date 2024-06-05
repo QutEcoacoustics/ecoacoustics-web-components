@@ -7,9 +7,11 @@ import { queryAllDeeplyAssignedElements, queryDeeplyAssignedElement } from "../.
 import { Verification } from "../../models/verification";
 import { VerificationGridTile } from "../verification-grid-tile/verification-grid-tile";
 import { Decision } from "../decision/decision";
+import { Parser } from "@json2csv/plainjs";
+import csv from "csvtojson";
 
 export type SelectionObserverType = "desktop" | "tablet";
-type PageFetcher = (elapsedItems: number) => Promise<any[]>;
+export type PageFetcher = (elapsedItems: number) => Promise<any[]>;
 type SelectionEvent = CustomEvent<{ shiftKey: boolean; ctrlKey: boolean; index: number }>;
 
 /**
@@ -76,6 +78,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   public decisions: Verification[] = [];
   private spectrogramsLoaded = 0;
   private hiddenTiles = 0;
+  private fileType: "json" | "csv" = "json";
 
   // TODO: find a better way to do this
   private showingSelectionShortcuts = false;
@@ -203,7 +206,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   private handleIntersection(entries: IntersectionObserverEntry[]): void {
     for (const entry of entries) {
       if (entry.intersectionRatio < 1) {
-        // this.gridSize--;
+        // this.hideGridItems(this.hiddenTiles + 1);
       }
     }
   }
@@ -311,6 +314,9 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
   // this function can be used in a map function over the getPage results to convert
   // OE Verification data model
+  // TODO: Move this data manipulation to a singleton service
+  // see https://github.com/QutEcoacoustics/baw-server/blob/40eb8002c1d10632b132b86b6fa94547ed637945/app/modules/api/audio_event_parser.rb#L12-L27
+  // TODO: write a protocol for data format conversion that we both agree on
   private convertJsonToVerification(original: Record<string, any>): Verification {
     const possibleSrcKeys = ["src", "url", "AudioLink"];
     const possibleTagKeys = ["tags", "tag", "label", "classification"];
@@ -327,20 +333,33 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     });
   }
 
+  // TODO: cache the file on first fetch
   private srcPageCallback(src: string): PageFetcher {
     return async (elapsedItems: number) => {
+      // TODO: add support for local files maybe through a new file picker component
+      // called oe-local-data with a `for` attribute
       const response = await fetch(src);
 
       if (!response.ok) {
         throw new Error("Could not fetch page");
       }
 
-      const data = await response.json();
+      const data: string = await response.text();
+
+      // TODO: we should be using the headers to inspect the file type
+      // if the file type cannot be determined by the header, then we should only
+      // use the first byte as a fallback heuristic
+      const jsonData = this.fileFormat(data) === "json" ? JSON.parse(data) : await csv().fromString(data);
+
+      // TODO: Check if this is the correct solution
+      if (!Array.isArray(jsonData)) {
+        throw new Error("Response is not an array");
+      }
 
       const startIndex = elapsedItems;
       const endIndex = startIndex + this.gridSize;
 
-      return data.slice(startIndex, endIndex) ?? [];
+      return jsonData.slice(startIndex, endIndex) ?? [];
     };
   }
 
@@ -349,9 +368,10 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   // this should not be a replacement for the user explicitly specifying the file
   // format, but it is better than throwing an error
   // TODO: The contents should probably be a pointer because otherwise we are copying the entire file!
-  private fileFormat(contents: string): "json" | "csv" | "tsv" {
-    // TODO: Add support for tsv files
-    return contents.startsWith("{") ? "json" : "csv";
+  private fileFormat(contents: string): "json" | "csv" {
+    const isJson = contents.startsWith("{") || contents.startsWith("[");
+    this.fileType = isJson ? "json" : "csv";
+    return this.fileType;
   }
 
   // TODO: add stricter typing here
@@ -531,18 +551,11 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   // TODO: improve this function
   private decisionPrompt(): string {
     const tags = this.decisionElements?.map((item: Decision) => item.tag);
-    const uniqueTags = Array.from(new Set(tags));
-
-    // TODO: finish
-    const tiles = Array.from(this.gridTiles);
-    const selectedItems = tiles.filter((item: VerificationGridTile) => item.selected);
+    let uniqueTags = Array.from(new Set(tags));
+    uniqueTags = uniqueTags.filter((tag) => !!tag && tag !== "*");
     const possibleItems = uniqueTags.join(", or ");
 
-    if (selectedItems.length === 0) {
-      return `Are all of these a ${possibleItems}?`;
-    }
-
-    return `Are the selected ${selectedItems.length} a ${possibleItems}?`;
+    return `Are all of these a ${possibleItems}?`;
   }
 
   private highlightIntersectionHandler(entries: IntersectionObserverEntry[]) {
@@ -617,6 +630,38 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     element.style.display = "none";
   }
 
+  // TODO: clean up this function
+  // TODO: there is a "null" in additional tags (if none)
+  private downloadResults(): void {
+    let formattedResults = "";
+    const fileFormat = this.fileType;
+    const results = this.decisions.map((decision: Verification) => {
+      const subject = decision.subject;
+      const tag = decision.tag?.text;
+      const confirmed = decision.confirmed;
+      const additionalTags = decision.additionalTags?.map((tag) => tag.text);
+
+      return { ...subject, tag, confirmed, additionalTags };
+    });
+
+    if (fileFormat === "json") {
+      formattedResults = JSON.stringify(results);
+    } else if (fileFormat === "csv") {
+      formattedResults = new Parser().parse(results);
+    }
+
+    const blob = new Blob([formattedResults], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+
+    // TODO: we should just be able to use the file download API
+    // TODO: probably apply a transformation to arrays in CSVs (use semi-columns as item delimiters)
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "verification-results";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   private highlightBoxTemplate(): TemplateResult<1> {
     return html`<div
       id="highlight-box"
@@ -639,6 +684,8 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   public render() {
     return html`
       <div class="verification-container">
+        <button @click="${this.downloadResults}" class="oe-btn oe-btn-secondary">Download Results</button>
+
         <div
           @selected="${this.selectionHandler}"
           @pointerdown="${this.renderHighlightBox}"

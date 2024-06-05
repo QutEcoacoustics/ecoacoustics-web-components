@@ -43,8 +43,8 @@ export class VerificationGridTile extends AbstractComponent(LitElement) {
 
   // there is a difference between @state and @property({ attribute: false })
   // see more here: https://stackoverflow.com/a/70343809
-  @property({ attribute: false })
   @provide({ context: gridTileContext })
+  @property({ attribute: false })
   public model!: Verification;
 
   @state()
