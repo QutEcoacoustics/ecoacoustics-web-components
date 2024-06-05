@@ -8,7 +8,7 @@ import { Verification } from "../../models/verification";
 import { VerificationGridTile } from "../verification-grid-tile/verification-grid-tile";
 import { Decision } from "../decision/decision";
 import { Parser } from "@json2csv/plainjs";
-import csv from "csvtojson";
+import { VerificationParser } from "../../services/verificationParser";
 
 export type SelectionObserverType = "desktop" | "tablet";
 export type PageFetcher = (elapsedItems: number) => Promise<any[]>;
@@ -49,10 +49,6 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
   @property({ attribute: "selection-behavior", type: String, reflect: true })
   public selectionBehavior: SelectionObserverType = "desktop";
-
-  // src can point to a JSON, CSV, or TSV file
-  @property({ type: String })
-  public src: string | undefined;
 
   @property({ type: String })
   public audioKey!: string;
@@ -115,7 +111,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     const reRenderKeys: (keyof this)[] = ["gridSize", "audioKey"];
     const elementsToObserve = this.gridTiles;
 
-    const sourceInvalidationKeys: (keyof this)[] = ["getPage", "src"];
+    const sourceInvalidationKeys: (keyof this)[] = ["getPage"];
 
     if (change.has("selectionBehavior")) {
       this.multiSelectHead = null;
@@ -127,14 +123,6 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
     // TODO: figure out if there is a better way to do this invalidation
     if (sourceInvalidationKeys.some((key) => change.has(key))) {
-      if (!this.getPage) {
-        if (!this.src) {
-          throw new Error("getPage or src is required for verification-grid");
-        }
-
-        this.getPage = this.srcPageCallback(this.src);
-      }
-
       this.pagedItems = 0;
 
       if (this.gridTiles?.length) {
@@ -312,68 +300,6 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     }
   }
 
-  // this function can be used in a map function over the getPage results to convert
-  // OE Verification data model
-  // TODO: Move this data manipulation to a singleton service
-  // see https://github.com/QutEcoacoustics/baw-server/blob/40eb8002c1d10632b132b86b6fa94547ed637945/app/modules/api/audio_event_parser.rb#L12-L27
-  // TODO: write a protocol for data format conversion that we both agree on
-  private convertJsonToVerification(original: Record<string, any>): Verification {
-    const possibleSrcKeys = ["src", "url", "AudioLink"];
-    const possibleTagKeys = ["tags", "tag", "label", "classification"];
-
-    this.audioKey ??= possibleSrcKeys.find((key) => key in original) ?? "";
-    const tagKey = possibleTagKeys.find((key) => key in original) ?? "";
-
-    return new Verification({
-      subject: original,
-      url: original[this.audioKey],
-      tag: original[tagKey],
-      confirmed: false,
-      additionalTags: [],
-    });
-  }
-
-  // TODO: cache the file on first fetch
-  private srcPageCallback(src: string): PageFetcher {
-    return async (elapsedItems: number) => {
-      // TODO: add support for local files maybe through a new file picker component
-      // called oe-local-data with a `for` attribute
-      const response = await fetch(src);
-
-      if (!response.ok) {
-        throw new Error("Could not fetch page");
-      }
-
-      const data: string = await response.text();
-
-      // TODO: we should be using the headers to inspect the file type
-      // if the file type cannot be determined by the header, then we should only
-      // use the first byte as a fallback heuristic
-      const jsonData = this.fileFormat(data) === "json" ? JSON.parse(data) : await csv().fromString(data);
-
-      // TODO: Check if this is the correct solution
-      if (!Array.isArray(jsonData)) {
-        throw new Error("Response is not an array");
-      }
-
-      const startIndex = elapsedItems;
-      const endIndex = startIndex + this.gridSize;
-
-      return jsonData.slice(startIndex, endIndex) ?? [];
-    };
-  }
-
-  // if the user does not explicitly specify a file format that their data is in
-  // we can use some simple heuristics to determine the file format
-  // this should not be a replacement for the user explicitly specifying the file
-  // format, but it is better than throwing an error
-  // TODO: The contents should probably be a pointer because otherwise we are copying the entire file!
-  private fileFormat(contents: string): "json" | "csv" {
-    const isJson = contents.startsWith("{") || contents.startsWith("[");
-    this.fileType = isJson ? "json" : "csv";
-    return this.fileType;
-  }
-
   // TODO: add stricter typing here
   private catchDecision(event: CustomEvent) {
     const decision: boolean = event.detail.value;
@@ -422,7 +348,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
       this.spectrogramElements = this.noItemsTemplate();
     }
 
-    nextPage = nextPage.map((item) => this.convertJsonToVerification(item));
+    nextPage = nextPage.map(VerificationParser.parse);
 
     nextPage.forEach((item: Verification, i: number) => {
       const target = elements[i];
@@ -460,7 +386,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
       return;
     }
 
-    page = page.map((item) => this.convertJsonToVerification(item));
+    page = page.map(VerificationParser.parse);
 
     await Promise.all(page.map((item) => fetch(item.url, { method: "GET" })));
   }
@@ -474,7 +400,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
         return;
       }
 
-      page = page.map((item) => this.convertJsonToVerification(item));
+      page = page.map(VerificationParser.parse);
 
       Promise.all(page.map((item) => fetch(item.url, { method: "HEAD" })));
 

@@ -27,7 +27,7 @@ export const axesStyles = css`
     text {
       fill: var(--oe-font-color);
       stroke: none;
-      font: 11px monospace;
+      font: 11px sans-serif;
     }
 
     g {

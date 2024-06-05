@@ -101,7 +101,7 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
 
   // because querying the DOM for the font size will cause a repaint and reflow
   // we calculate the value once using a canvas
-  private calculateFontSize(text = "0"): Size {
+  private calculateFontSize(text = "M"): Size {
     const element = document.createElement("canvas");
     const context = element.getContext("2d")!;
     context.font = "11px monospace";
@@ -169,8 +169,7 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
     const yTitleOffset = yTitleFontSize.height + fontSize.width + this.tickSize;
 
     const xLabel = (value: Seconds) => {
-      const labelSize = this.calculateFontSize(value.toFixed(1));
-      const xPos = this.unitConverter.scaleX.value(value) + labelSize.width / 2;
+      const xPos = this.unitConverter.scaleX.value(value);
       const yPos = canvasSize.height + this.tickSize;
 
       return svg`<g>
@@ -182,7 +181,8 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
         ></line>
         <text
           part="label x-label"
-          text-anchor="end"
+          text-anchor="middle"
+          dominant-baseline="end"
           x="${xPos}"
           y="${yPos + this.tickSize}"
         >
@@ -192,9 +192,8 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
     };
 
     const yLabel = (value: Hertz) => {
-      const labelSize = this.calculateFontSize(value.toString());
       const xPos = -this.tickSize;
-      const yPos = this.unitConverter.scaleY.value(value) + labelSize.height / 2;
+      const yPos = this.unitConverter.scaleY.value(value);
 
       console.log("ypos for", yPos, value);
 
@@ -208,6 +207,7 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
         <text
           part="label y-label"
           text-anchor="end"
+          dominant-baseline="middle"
           x="${xPos - this.labelPadding}"
           y="${yPos}"
         >
