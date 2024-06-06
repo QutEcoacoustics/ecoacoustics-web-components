@@ -9,6 +9,8 @@ import { VerificationGridTile } from "../verification-grid-tile/verification-gri
 import { Decision } from "../decision/decision";
 import { Parser } from "@json2csv/plainjs";
 import { VerificationParser } from "../../services/verificationParser";
+import { unsafeSVG } from "lit/directives/unsafe-svg.js";
+import lucideCircleHelp from "lucide-static/icons/circle-help.svg?raw";
 
 export type SelectionObserverType = "desktop" | "tablet";
 export type PageFetcher = (elapsedItems: number) => Promise<any[]>;
@@ -504,7 +506,8 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   private doneRenderBoxInit = false;
   private renderHighlightBox(event: PointerEvent) {
     if (event.isPrimary) {
-      this.highlighting = true;
+      // TODO: enable this once I want highlighting again
+      // this.highlighting = true;
 
       const element = this.shadowRoot!.getElementById("highlight-box");
       if (!element) {
@@ -589,7 +592,8 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
       formattedResults = new Parser().parse(results);
     }
 
-    const blob = new Blob([formattedResults], { type: "text/plain" });
+    const type = fileFormat === "json" ? "application/json" : "text/csv";
+    const blob = new Blob([formattedResults], { type });
     const url = URL.createObjectURL(blob);
 
     // TODO: we should just be able to use the file download API
@@ -648,8 +652,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   private helpDialogTemplate(): TemplateResult<1> {
     const selectionKeyboardShortcuts: KeyboardShortcut[] = [
       { key: "Ctrl + A", description: "Select all items" },
-      { key: "Ctrl + Shift + A", description: "Select all items" },
-      { key: "Shift + Click", description: "Select a range of items" },
+      { key: "Shift + Click", description: "Add a range of items to the sub-selection" },
       { key: "Ctrl + Click", description: "Toggle the selection of a single item" },
       { key: "Ctrl + Shift + Click", description: "Select a range of items" },
       { key: "Escape", description: "Deselect all items" },
@@ -724,9 +727,6 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
       ${this.helpDialogTemplate()}
 
       <div class="verification-container">
-        <button @click="${this.downloadResults}" class="oe-btn oe-btn-secondary">Download Results</button>
-        <button @click="${() => this.helpDialogElement.showModal()}" class="oe-btn oe-btn-secondary">Help</button>
-
         <div
           @selected="${this.selectionHandler}"
           @pointerdown="${this.renderHighlightBox}"
@@ -738,11 +738,20 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
         </div>
         <h2 class="verification-controls-title">Are all of these a</h2>
         <div class="verification-controls">
-          <slot @decision="${this.catchDecision}"></slot>
-        </div>
+          <span>
+            <button class="oe-btn oe-btn-secondary">Previous</button>
+          </span>
 
-        <div class="paging-options">
-          <button class="oe-btn oe-btn-secondary">Previous</button>
+          <span class="decision-controls">
+            <slot @decision="${this.catchDecision}"></slot>
+          </span>
+
+          <span>
+            <button @click="${this.downloadResults}" class="oe-btn oe-btn-secondary">Download Results</button>
+            <button @click="${() => this.helpDialogElement.showModal()}" class="oe-btn oe-btn-secondary">
+              ${unsafeSVG(lucideCircleHelp)}
+            </button>
+          </span>
         </div>
       </div>
       ${this.highlightBoxTemplate()}

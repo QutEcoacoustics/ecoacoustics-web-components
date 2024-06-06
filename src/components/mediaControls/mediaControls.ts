@@ -1,13 +1,21 @@
-import { LitElement, PropertyValues, html } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { LitElement, PropertyValues, TemplateResult, html } from "lit";
+import { customElement, property, query } from "lit/decorators.js";
 import { mediaControlsStyles } from "./css/style";
 import { ILogger, rootContext } from "../logger/logger";
 import { provide } from "@lit/context";
-import lucidPlayIcon from "lucide-static/icons/play.svg?raw";
-import lucidPauseIcon from "lucide-static/icons/pause.svg?raw";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { AbstractComponent } from "../../mixins/abstractComponent";
 import { Spectrogram } from "spectrogram/spectrogram";
+import { SpectrogramOptions } from "../../helpers/audio/models";
+import lucidPlayIcon from "lucide-static/icons/play.svg?raw";
+import lucidPauseIcon from "lucide-static/icons/pause.svg?raw";
+import lucidePalette from "lucide-static/icons/palette.svg?raw";
+import lucideAudioWaveform from "lucide-static/icons/audio-waveform.svg?raw";
+import lucideProportions from "lucide-static/icons/proportions.svg?raw";
+import lucideBlend from "lucide-static/icons/blend.svg?raw";
+import lucideRuler from "lucide-static/icons/ruler.svg?raw";
+import lucideSun from "lucide-static/icons/sun.svg?raw";
+import lucideContrast from "lucide-static/icons/contrast.svg?raw";
 
 /**
  * A simple media player with play/pause and seek functionality that can be used with the open ecoacoustics spectrograms and components.
@@ -31,6 +39,9 @@ export class MediaControls extends AbstractComponent(LitElement) {
 
   @property({ type: String })
   public for = "";
+
+  @query("#spectrogram-settings")
+  private spectrogramSettingsForm!: HTMLFormElement;
 
   private spectrogramElement?: Spectrogram | null;
   private playHandler = this.handleUpdatePlaying.bind(this);
@@ -76,6 +87,28 @@ export class MediaControls extends AbstractComponent(LitElement) {
     return !this.spectrogramElement?.paused;
   }
 
+  // TODO: tighten this typing. It should be a form submit event
+  // TODO: clean up this function, it is terrible
+  private updateSpectrogramOptions(): void {
+    if (!this.spectrogramElement) {
+      return;
+    }
+
+    const formData = new FormData(this.spectrogramSettingsForm);
+    const formObject = Object.fromEntries(formData);
+    const newSpectrogramOptions = new SpectrogramOptions(
+      Number(formObject.windowSize),
+      Number(formObject.windowOverlap),
+      formObject.windowFunction as any,
+      formObject.melScale === "true",
+      Number(formObject.brightness),
+      Number(formObject.contrast),
+      formObject.colorMap as any,
+    );
+
+    this.spectrogramElement.spectrogramOptions = newSpectrogramOptions;
+  }
+
   private playIcon() {
     return html`<slot name="play-icon" part="play-icon">${unsafeSVG(lucidPlayIcon)}</slot>`;
   }
@@ -84,11 +117,145 @@ export class MediaControls extends AbstractComponent(LitElement) {
     return html`<slot name="pause-icon" part="pause-icon">${unsafeSVG(lucidPauseIcon)}</slot>`;
   }
 
+  private preferencesTemplate(title: string, summaryTemplate: any, template: TemplateResult<1>) {
+    return html`
+      <details>
+        <summary title="${title}">${summaryTemplate}</summary>
+        <div class="content">${template}</div>
+      </details>
+    `;
+  }
+
+  private spectrogramSettingsTemplate(): TemplateResult<1> {
+    return html`
+      <form id="spectrogram-settings" @change="${this.updateSpectrogramOptions}">
+        ${this.preferencesTemplate(
+          "Colour Pallette",
+          unsafeSVG(lucidePalette),
+          html`
+            <label>
+              Colour Pallette
+              <select name="colorMap">
+                <option value="grayscale">Grayscale</option>
+                <option value="audacity" selected>Audacity</option>
+                <option value="raven">Raven</option>
+                <option value="cubeHelix">Cube Helix</option>
+                <option value="viridis">Viridis</option>
+                <option value="turbo">Turbo</option>
+                <option value="plasma">Plasma</option>
+                <option value="inferno">Inferno</option>
+                <option value="magma">Magma</option>
+                <option value="gammaII">Gamma II</option>
+                <option value="blue">Blue</option>
+                <option value="green">Green</option>
+                <option value="orange">Orange</option>
+                <option value="purple">Purple</option>
+                <option value="red">Red</option>
+              </select>
+            </label>
+          `,
+        )}
+        ${this.preferencesTemplate(
+          "Window Function",
+          unsafeSVG(lucideAudioWaveform),
+          html`
+            <label>
+              Window Function
+              <select name="windowFunction">
+                <option value="">None</option>
+                <option value="hann" selected>Hann</option>
+                <option value="hamming">Hamming</option>
+                <option value="lanczos">Lanczos</option>
+                <option value="gaussian">Gaussian</option>
+                <option value="tukey">Tukey</option>
+                <option value="blackman">Blackman</option>
+                <option value="exact-blackman">Exact Blackman</option>
+                <option value="blackman-harris">Blackman Harris</option>
+                <option value="backman-nuttall">Blackman Nuttall</option>
+                <option value="kaiser">Kaiser</option>
+                <option value="flat-top">Flat Top</option>
+              </select>
+            </label>
+          `,
+        )}
+        ${this.preferencesTemplate(
+          "Window Size",
+          unsafeSVG(lucideProportions),
+          html`
+            <label>
+              Window Size
+              <select name="windowSize">
+                <option value="128">128</option>
+                <option value="256">256</option>
+                <option value="512" selected>512</option>
+                <option value="1024">1024</option>
+                <option value="2048">2048</option>
+              </select>
+            </label>
+          `,
+        )}
+        ${this.preferencesTemplate(
+          "Window Overlap",
+          unsafeSVG(lucideBlend),
+          html`
+            <label>
+              Window Overlap
+              <select name="windowOverlap">
+                <option value="0" selected>None</option>
+                <option value="128">128</option>
+                <option value="256">256</option>
+                <option value="512">512</option>
+                <option value="1024">1024</option>
+              </select>
+            </label>
+          `,
+        )}
+        ${this.preferencesTemplate(
+          "Scale",
+          unsafeSVG(lucideRuler),
+          html`
+            <label>
+              Scale
+              <select name="melScale">
+                <option value="false" selected>Linear</option>
+                <option value="true">Mel</option>
+              </select>
+            </label>
+          `,
+        )}
+        ${this.preferencesTemplate(
+          "Brightness",
+          unsafeSVG(lucideSun),
+          html`
+            <label>
+              Brightness
+              <input type="number" value="0" step="0.05" name="brightness" />
+            </label>
+          `,
+        )}
+        ${this.preferencesTemplate(
+          "Contrast",
+          unsafeSVG(lucideContrast),
+          html`
+            <label>
+              Contrast
+              <input type="number" value="1" step="0.05" name="contrast" />
+            </label>
+          `,
+        )}
+      </form>
+    `;
+  }
+
   public render() {
     return html`
-      <button id="action-button" class="oe-btn oe-btn-primary" @click="${this.toggleAudio}">
-        ${this.isSpectrogramPlaying() ? this.pauseIcon() : this.playIcon()}
-      </button>
+      <div class="container">
+        <button id="action-button" class="oe-btn oe-btn-primary" @click="${this.toggleAudio}">
+          ${this.isSpectrogramPlaying() ? this.pauseIcon() : this.playIcon()}
+        </button>
+
+        ${this.spectrogramSettingsTemplate()}
+      </div>
     `;
   }
 }

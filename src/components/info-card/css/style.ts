@@ -8,6 +8,7 @@ export const infoCardStyle = css`
     padding: 0.5rem;
     padding-top: 1rem;
     padding-bottom: 1rem;
+    color: var(--oe-font-color);
     background-color: var(--oe-info-color);
     border-radius: var(--oe-border-rounding);
     font-size: 0.8rem;

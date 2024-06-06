@@ -201,8 +201,6 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
       const xPos = -this.tickSize;
       const yPos = this.unitConverter.scaleY.value(value);
 
-      console.log("ypos for", yPos, value);
-
       return svg`<g>
         <line
           x1="${xPos}"
@@ -279,7 +277,7 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
   private xValues(): Seconds[] {
     const step =
       this.xStepOverride ||
-      this.calculateStep(this.unitConverter.temporalDomain.value, this.unitConverter.temporalRange.value, "x");
+      this.calculateStep(this.unitConverter.temporalDomain.value, this.unitConverter.temporalRange.value, "width");
 
     return this.generateAxisValues(
       this.unitConverter.renderWindow.value.startOffset,
@@ -292,7 +290,7 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
   private yValues(): Hertz[] {
     const step =
       this.yStepOverride ||
-      this.calculateStep(this.unitConverter.frequencyDomain.value, this.unitConverter.frequencyRange.value, "y");
+      this.calculateStep(this.unitConverter.frequencyDomain.value, this.unitConverter.frequencyRange.value, "height");
 
     return this.generateAxisValues(
       this.unitConverter.renderWindow.value.lowFrequency,
@@ -309,53 +307,41 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
     return proposedSize < canvasSize;
   }
 
-  // TODO: Instead of using a mono-width font, we should probably just use a sans-serif font
-  // and measure the letter M
-  // to get around the label centering issue, we should just use svg align-text: center
   private calculateStep(
     domain: ScaleDomain<Seconds | Hertz>,
     range: ScaleRange<Seconds | Hertz>,
-    orientation: "x" | "y",
+    sizeKey: keyof Size,
   ): number {
-    const smallestValue = domain[0];
-    const largestValue = domain[1];
-    const domainDelta = largestValue - smallestValue;
-    const fontSize = this.calculateFontSize();
-    const importantFontSize = orientation === "x" ? fontSize.width : fontSize.height;
+    const niceFactors = [10, 5, 2, 1, 0.5, 0.2, 0.1];
+    const fontSize = this.calculateFontSize("0.0");
+    const totalLabelSize = fontSize[sizeKey] + this.labelPadding;
 
-    const canvasSize = range[1] - range[0];
-    const midpoint = (smallestValue + largestValue) / 2;
-    const baseTenStep = Math.pow(10, Math.floor(Math.log10(midpoint)));
+    // the domain is the lowest and highest values that we want to show on the axis
+    // meanwhile the range is the first and last position that we can position elements
+    // we absolute the range to get the canvas size because for frequency the start of the range
+    // is at the bottom of the canvas (since we want the lowest frequency to be at the bottom of the canvas)
+    const domainDelta = domain[1] - domain[0];
+    const canvasSize = Math.abs(range[1] - range[0]);
 
-    // we try to divide the base ten step by some nice factors and see if they still fit
-    // if they do, we should use them instead
-    // higher in the list takes higher priority
-    const niceFactors = [5, 2];
-    const totalLabelSize = importantFontSize * (this.labelPadding * 2);
+    // the domain midpoint is the value that would be at the center of the axis
+    // we cannot simply do (domain[1] - domain[0]) / 2 because the we want to allow
+    // for the domain minimum to be non-zero
+    //
+    // e.g. in the case that domain = [700, 800] we want the midpoint to be 750 not 50
+    //      (in this case, 50 would be below the domain minimum of 700!)
+    // prettier-ignore
+    const domainMidpoint = (domainDelta / 2) + domain[0];
+    const initialProposedStep = Math.pow(10, Math.floor(Math.log10(domainMidpoint)));
 
-    // TODO: this can probably be combined into a single loop
-    // if we get past this guard, then the axis labels are overlapping
-    if (!this.willFitStep(baseTenStep, canvasSize, domainDelta, totalLabelSize)) {
-      for (const factor of niceFactors) {
-        const niceProposedStep = baseTenStep * factor;
-
-        if (this.willFitStep(niceProposedStep, canvasSize, domainDelta, totalLabelSize)) {
-          return niceProposedStep;
-        }
-      }
-    }
-
-    // if the labels are not overlapping, then we try to decrease the step
-    // by some "nice" factors
     for (const factor of niceFactors) {
-      const niceProposedStep = baseTenStep / factor;
+      const proposedStep = initialProposedStep / factor;
 
-      if (this.willFitStep(niceProposedStep, canvasSize, domainDelta, totalLabelSize)) {
-        return niceProposedStep;
+      if (this.willFitStep(proposedStep, canvasSize, domainDelta, totalLabelSize)) {
+        return proposedStep;
       }
     }
 
-    return baseTenStep;
+    return initialProposedStep;
   }
 
   private generateAxisValues(

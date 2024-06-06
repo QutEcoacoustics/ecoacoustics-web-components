@@ -107,10 +107,14 @@ export const verificationGridStyles = css`
   .verification-controls {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: space-around;
     align-items: stretch;
     padding: 1rem;
     gap: 1rem;
     color: var(--oe-font-color);
+
+    button {
+      height: 100%;
+    }
   }
 `;

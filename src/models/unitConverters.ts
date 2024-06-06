@@ -21,6 +21,7 @@ export type InvertFrequencyScale = InverseLinearScale<Hertz>;
 
 const identityFunction = (value: number) => value;
 
+// TODO: we might want to use batch signals here to increase performance
 // use we signals in the stateful unit converters so that when one value updates
 // all the computed values also update
 export class UnitConverter {

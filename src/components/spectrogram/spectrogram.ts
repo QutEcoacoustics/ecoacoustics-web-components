@@ -110,6 +110,28 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
   // TODO: remove this
   private doneFirstRender = false;
 
+  public get spectrogramOptions(): SpectrogramOptions {
+    return new SpectrogramOptions(
+      this.windowSize,
+      this.windowOverlap,
+      this.windowFunction,
+      this.melScale,
+      this.brightness,
+      this.contrast,
+      this.colorMap,
+    );
+  }
+
+  public set spectrogramOptions(options: SpectrogramOptions) {
+    this.windowSize = options.windowSize;
+    this.windowOverlap = options.windowOverlap;
+    this.windowFunction = options.windowFunction;
+    this.melScale = options.melScale;
+    this.brightness = options.brightness;
+    this.contrast = options.contrast;
+    this.colorMap = options.colorMap;
+  }
+
   public get renderedSource(): string {
     return this.src || this.slotElements[0]?.getAttribute("src") || "";
   }
@@ -167,7 +189,7 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
     );
 
     this.audioHelper
-      .connect(this.renderedSource, this.canvas, this.spectrogramOptions())
+      .connect(this.renderedSource, this.canvas, this.spectrogramOptions)
       .then((info: IAudioInformation) => {
         const originalRecording = { duration: info.duration!, startOffset: this.offset };
 
@@ -195,7 +217,7 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
       }),
     );
 
-    this.audioHelper.changeSource(this.renderedSource, this.spectrogramOptions()).then((info: IAudioInformation) => {
+    this.audioHelper.changeSource(this.renderedSource, this.spectrogramOptions).then((info: IAudioInformation) => {
       const originalRecording = { duration: info.duration!, startOffset: this.offset };
 
       this.audio.value = new AudioModel({
@@ -213,7 +235,7 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
   }
 
   public regenerateSpectrogramOptions(): void {
-    this.audioHelper.regenerateSpectrogram(this.spectrogramOptions()).then(() => {
+    this.audioHelper.regenerateSpectrogram(this.spectrogramOptions).then(() => {
       this.dispatchEvent(
         new CustomEvent("loaded", {
           bubbles: true,
@@ -239,7 +261,7 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
   }
 
   private originalFftSize(): Size {
-    const options = this.spectrogramOptions();
+    const options = this.spectrogramOptions;
     const step = options.windowSize - options.windowOverlap;
     const duration = this.audio.value.duration;
     const sampleRate = this.audio.value.sampleRate;
@@ -397,18 +419,6 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
         this.highFreqUpdateCurrentTime(lastHighResSync, mediaElementTime),
       );
     }
-  }
-
-  private spectrogramOptions(): SpectrogramOptions {
-    return new SpectrogramOptions(
-      this.windowSize,
-      this.windowOverlap,
-      this.windowFunction,
-      this.melScale,
-      this.brightness,
-      this.contrast,
-      this.colorMap,
-    );
   }
 
   private setPlaying(): void {
