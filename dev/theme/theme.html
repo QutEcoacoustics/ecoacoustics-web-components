@@ -57,24 +57,26 @@
 
         <label>
             <input type="radio">
-            Radio!
+            Radio
         </label>
 
         <input type="number" placeholder="Number input">
 
-        <input type="text" placeholder="Text input" />
+        <input type="text" placeholder="Text input" required />
 
-        <textarea placeholder="Text area"></textarea>
+        <textarea placeholder="Text area" required></textarea>
 
         <input type="file">
 
-        <select>
+        <select required>
             <option>Option 1</option>
             <option>Option 2</option>
             <option>Option 3</option>
         </select>
 
-        <kbd>Ctrl + Alt + Del</kbd>
+        <span>
+            <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Del</kbd>
+        </span>
     </section>
 
     <script>
@@ -171,6 +173,7 @@
 
         section {
             margin: 2rem;
+            margin-top: 1rem;
         }
 
         h2 {
@@ -196,8 +199,10 @@
         .grid-item {
             display: grid;
             grid-template-columns: 1fr 2fr;
-            border: 1px solid black;
-            padding: 0.5rem;
+            box-shadow: var(--oe-box-shadow);
+            border: 1px solid var(--oe-border-color);
+            border-radius: var(--oe-border-rounding);
+            padding: 1rem;
             text-align: center;
             align-items: center;
         }
