@@ -1,5 +1,6 @@
 import { State } from "./state";
 import { IAudioMetadata, parseBlob } from "music-metadata-browser";
+// import bufferBuilderProcessorConstructor from "./buffer-builder-processor.ts?worker&inline";
 import bufferBuilderProcessorPath from "./buffer-builder-processor.ts?worker&url";
 // import workerPath from "./worker.ts?worker&url";
 import WorkerConstructor from "./worker.ts?worker&inline";
@@ -222,7 +223,9 @@ export class AudioHelper {
     const decodedBuffer = await context.decodeAudioData(buffer);
     const source = new AudioBufferSourceNode(context, { buffer: decodedBuffer });
 
-    await context.audioWorklet.addModule(new URL(bufferBuilderProcessorPath, import.meta.url));
+    await context.audioWorklet.addModule(
+      new URL(bufferBuilderProcessorPath.slice(1), import.meta.url.replace("+esm", "")).href,
+    );
     const processor = new AudioWorkletNode(context, BUFFER_PROCESSOR_NAME);
 
     source.connect(processor).connect(context.destination);

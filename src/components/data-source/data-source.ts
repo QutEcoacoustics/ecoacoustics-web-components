@@ -40,8 +40,15 @@ export class DataSource extends AbstractComponent(LitElement) {
   }
 
   private async getJsonData(): Promise<unknown[]> {
-    if (!this.src || !this.for) {
-      throw new Error("src and for attribute must be set on a data source");
+    if (!this.for) {
+      throw new Error("for attribute must be set on a data source");
+    }
+
+    // it is possible to have no src attribute if the file is expected to be
+    // provided locally through the src attribute
+    // TODO: this should not be an error
+    if (!this.src) {
+      throw new Error();
     }
 
     const response = await fetch(this.src);
@@ -53,7 +60,7 @@ export class DataSource extends AbstractComponent(LitElement) {
     // TODO: add support for local files maybe through a new file picker component
     // called oe-local-data with a `for` attribute
     const data: string = await response.text();
-    const contentType = await response.headers.get("Content-Type");
+    const contentType = response.headers.get("Content-Type");
 
     if (contentType) {
       this.fileType = contentType.includes("json") ? "json" : "csv";

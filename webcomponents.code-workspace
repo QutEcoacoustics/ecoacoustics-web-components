@@ -83,7 +83,10 @@
       "ecmel.vscode-html-css",
       "pushqrdx.inline-html",
       "hediet.vscode-drawio",
-      "htmlhint.vscode-htmlhint"
+      "htmlhint.vscode-htmlhint",
+
+      // toml is used for netlify configs
+      "tamasfe.even-better-toml"
     ]
   },
   "launch": {

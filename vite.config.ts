@@ -12,6 +12,17 @@ export default defineConfig({
     }) as any,
     nodePolyfills(),
     svgLoader(),
+    {
+      name: "remove-esm-suffix",
+      configureServer(server) {
+        server.middlewares.use((req: any, res, next) => {
+          if (req.url.endsWith("+esm")) {
+            req.url = req.url.replace("+esm", "");
+          }
+          next();
+        });
+      },
+    },
   ],
   // we have to enable a secure context and set the Cross-Origin-Opener-Policy and Cross-Origin-Embedder-Policy
   // headers to use the SharedArrayBuffer

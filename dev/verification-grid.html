@@ -10,7 +10,7 @@
 
 <body>
     <div id="grid-host">
-        <oe-verification-grid id="verification-grid" grid-size="4" selection-behavior="desktop">
+        <oe-verification-grid id="verification-grid" grid-size="3" selection-behavior="desktop">
             <template>
                 <oe-axes>
                     <oe-indicator>
@@ -33,7 +33,7 @@
             This should probably use a data service.
             This service would
         -->
-        <oe-data-source for="verification-grid" src="/grid-items.csv" local></oe-data-source>
+        <oe-data-source for="verification-grid" local></oe-data-source>
     </div>
 
     <button onclick="changeVerificationGridSize();">Change explicit grid size</button>
