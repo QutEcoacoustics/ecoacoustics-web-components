@@ -223,9 +223,20 @@ export class AudioHelper {
     const decodedBuffer = await context.decodeAudioData(buffer);
     const source = new AudioBufferSourceNode(context, { buffer: decodedBuffer });
 
-    await context.audioWorklet.addModule(
-      new URL(bufferBuilderProcessorPath.slice(1), import.meta.url.replace("+esm", "")).href,
-    );
+    // TODO: this is a very dirty hack to get around Vite + CDN support
+    // the problem is that Vite builds import statements as an absolute path
+    // however, since we publish to the cdn under a subpath (/@ecoacoustics/web-components)
+    // we want module imports to use a relative path. Therefore, we convert an absolute path
+    // to a relative path here
+    //* I think this was fixed by setting the base to an empty string in vite.config.ts
+    // const processorPath = bufferBuilderProcessorPath.startsWith("/")
+    //   ? bufferBuilderProcessorPath.slice(1)
+    //   : bufferBuilderProcessorPath;
+    const processorUrl = new URL(bufferBuilderProcessorPath, import.meta.url);
+
+    console.log("processor url", processorUrl);
+
+    await context.audioWorklet.addModule(processorUrl);
     const processor = new AudioWorkletNode(context, BUFFER_PROCESSOR_NAME);
 
     source.connect(processor).connect(context.destination);
