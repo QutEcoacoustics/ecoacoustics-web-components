@@ -104,11 +104,11 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
   private calculateFontSize(text = "M"): Size {
     const element = document.createElement("canvas");
     const context = element.getContext("2d")!;
-    context.font = "11px monospace";
+    context.font = "var(--oe-font-size) var(--oe-font-family)";
 
-    const metrics = context.measureText(text);
-    const width = metrics.width;
-    const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+    const measurements = context.measureText(text);
+    const width = measurements.width;
+    const height = measurements.actualBoundingBoxAscent + measurements.actualBoundingBoxDescent;
 
     return { width, height };
   }

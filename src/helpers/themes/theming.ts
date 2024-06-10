@@ -17,8 +17,10 @@ export const theming = css`
 
     --oe-border-rounding: 6px;
     --oe-border-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) - 10%));
-    --oe-font-family: sans-serif;
     --oe-box-shadow: 1px 1px 1px currentcolor;
+    --oe-font-family: "Roboto", sans-serif;
+    /* --oe-font-family: arial, sans-serif; */
+    --oe-font-size: 11px;
 
     --oe-primary-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) - 38%));
     --oe-secondary-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) - 10%));
@@ -67,7 +69,7 @@ export const theming = css`
       height: 100%;
       border-radius: 0.13em;
       background: radial-gradient(circle farthest-corner at top right, #ededed, #c8c8c8);
-      box-shadow: 0px 0px 0.13em 0.1em rgba(0, 0, 0, 0.2);
+      box-shadow: 0.13em 0.13em 0 0.1em rgba(0, 0, 0, 0.2);
       z-index: -1;
     }
 
@@ -103,11 +105,31 @@ export const theming = css`
     height: 1px;
     background-color: var(--oe-font-color);
     opacity: 0.2;
-    margin-top: 1.5rem;
-    margin-bottom: 1.5rem;
   }
 
   dialog {
+    position: relative;
+    box-shadow: var(--oe-box-shadow);
+    border: 2px solid var(--oe-selected-color);
+    min-width: 70%;
+    min-height: 70%;
+    max-width: 80%;
+    max-height: 100%;
+    background-color: var(--oe-background-color);
+    border-radius: var(--oe-border-rounding);
+    padding: 0px;
+
+    animation: fade-in 600ms forwards;
+
+    dialog[open] {
+      animation: fade-in 600ms forwards;
+    }
+  }
+
+  p {
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    color: var(--oe-font-color);
   }
 
   input:not([type="checkbox"], [type="radio"]),
@@ -218,6 +240,12 @@ export const theming = css`
     display: none;
   }
 
+  .disabled {
+    filter: grayscale(100%);
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
   .oe-btn-primary {
     --background-color: var(--oe-background-color);
     border: 2px solid var(--oe-primary-color);
@@ -234,5 +262,14 @@ export const theming = css`
   .oe-btn-danger {
     --background-color: var(--oe-danger-color);
     color: white;
+  }
+
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
   }
 `;

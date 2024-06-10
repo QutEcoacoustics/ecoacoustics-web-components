@@ -1,4 +1,4 @@
-import { LitElement, PropertyValues, TemplateResult, html, nothing } from "lit";
+import { LitElement, PropertyValues, TemplateResult, html } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { mediaControlsStyles } from "./css/style";
 import { ILogger, rootContext } from "../logger/logger";
@@ -6,7 +6,6 @@ import { provide } from "@lit/context";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { AbstractComponent } from "../../mixins/abstractComponent";
 import { Spectrogram } from "spectrogram/spectrogram";
-import { SpectrogramOptions } from "../../helpers/audio/models";
 import lucidPlayIcon from "lucide-static/icons/play.svg?raw";
 import lucidPauseIcon from "lucide-static/icons/pause.svg?raw";
 import lucidePalette from "lucide-static/icons/palette.svg?raw";
@@ -45,7 +44,6 @@ export class MediaControls extends AbstractComponent(LitElement) {
 
   @state()
   private currentSettingsTemplate: TemplateResult<1> | null = null;
-  private currentSetting: string | null = null;
 
   private spectrogramElement?: Spectrogram | null;
   private playHandler = this.handleUpdatePlaying.bind(this);
@@ -121,143 +119,92 @@ export class MediaControls extends AbstractComponent(LitElement) {
     return html`<slot name="pause-icon" part="pause-icon">${unsafeSVG(lucidPauseIcon)}</slot>`;
   }
 
-  private preferencesTemplate(title: string, summaryTemplate: any, template: TemplateResult<1>) {
-    return html`
-      <span>
-        <a
-          title="${title}"
-          @click="${() => {
-            const isCurrentlySelected = this.currentSetting === title;
-
-            !isCurrentlySelected ? (this.currentSettingsTemplate = template) : (this.currentSettingsTemplate = null);
-
-            this.currentSetting = isCurrentlySelected ? null : title;
-          }}"
-        >
-          ${summaryTemplate}
-        </a>
-      </span>
-    `;
-  }
-
   private spectrogramSettingsTemplate(): TemplateResult<1> {
     return html`
       <form id="spectrogram-settings" @change="${this.updateSpectrogramOptions}">
         <div class="settings-menu">
-          ${this.preferencesTemplate(
-            "Colour Pallette",
-            unsafeSVG(lucidePalette),
-            html`
-              <label>
-                Colour Pallette
-                <select name="colorMap">
-                  <option value="grayscale">Grayscale</option>
-                  <option value="audacity" selected>Audacity</option>
-                  <option value="raven">Raven</option>
-                  <option value="cubeHelix">Cube Helix</option>
-                  <option value="viridis">Viridis</option>
-                  <option value="turbo">Turbo</option>
-                  <option value="plasma">Plasma</option>
-                  <option value="inferno">Inferno</option>
-                  <option value="magma">Magma</option>
-                  <option value="gammaII">Gamma II</option>
-                  <option value="blue">Blue</option>
-                  <option value="green">Green</option>
-                  <option value="orange">Orange</option>
-                  <option value="purple">Purple</option>
-                  <option value="red">Red</option>
-                </select>
-              </label>
-            `,
-          )}
-          ${this.preferencesTemplate(
-            "Window Function",
-            unsafeSVG(lucideAudioWaveform),
-            html`
-              <label>
-                Window Function
-                <select name="windowFunction">
-                  <option value="">None</option>
-                  <option value="hann" selected>Hann</option>
-                  <option value="hamming">Hamming</option>
-                  <option value="lanczos">Lanczos</option>
-                  <option value="gaussian">Gaussian</option>
-                  <option value="tukey">Tukey</option>
-                  <option value="blackman">Blackman</option>
-                  <option value="exact-blackman">Exact Blackman</option>
-                  <option value="blackman-harris">Blackman Harris</option>
-                  <option value="backman-nuttall">Blackman Nuttall</option>
-                  <option value="kaiser">Kaiser</option>
-                  <option value="flat-top">Flat Top</option>
-                </select>
-              </label>
-            `,
-          )}
-          ${this.preferencesTemplate(
-            "Window Size",
-            unsafeSVG(lucideProportions),
-            html`
-              <label>
-                Window Size
-                <select name="windowSize">
-                  <option value="128">128</option>
-                  <option value="256">256</option>
-                  <option value="512" selected>512</option>
-                  <option value="1024">1024</option>
-                  <option value="2048">2048</option>
-                </select>
-              </label>
-            `,
-          )}
-          ${this.preferencesTemplate(
-            "Window Overlap",
-            unsafeSVG(lucideBlend),
-            html`
-              <label>
-                Window Overlap
-                <select name="windowOverlap">
-                  <option value="0" selected>None</option>
-                  <option value="128">128</option>
-                  <option value="256">256</option>
-                  <option value="512">512</option>
-                  <option value="1024">1024</option>
-                </select>
-              </label>
-            `,
-          )}
-          ${this.preferencesTemplate(
-            "Scale",
-            unsafeSVG(lucideRuler),
-            html`
-              <label>
-                Scale
-                <select name="melScale">
-                  <option value="false" selected>Linear</option>
-                  <option value="true">Mel</option>
-                </select>
-              </label>
-            `,
-          )}
-          ${this.preferencesTemplate(
-            "Brightness",
-            unsafeSVG(lucideSun),
-            html`
-              <label>
-                Brightness
-                <input type="number" value="0" step="0.05" name="brightness" />
-              </label>
-            `,
-          )}
-          ${this.preferencesTemplate(
-            "Contrast",
-            unsafeSVG(lucideContrast),
-            html`
-              <label>
-                Contrast
-                <input type="number" value="1" step="0.05" name="contrast" />
-              </label>
-            `,
-          )}
+          <sl-dropdown>
+            <sl-button slot="trigger" caret>${unsafeSVG(lucidePalette)} Colour</sl-button>
+            <sl-menu>
+              <sl-menu-item value="grayscale">Grayscale</sl-menu-item>
+              <sl-menu-item value="audacity" selected>Audacity</sl-menu-item>
+              <sl-menu-item value="raven">Raven</sl-menu-item>
+              <sl-menu-item value="cubeHelix">Cube Helix</sl-menu-item>
+              <sl-menu-item value="viridis">Viridis</sl-menu-item>
+              <sl-menu-item value="turbo">Turbo</sl-menu-item>
+              <sl-menu-item value="plasma">Plasma</sl-menu-item>
+              <sl-menu-item value="inferno">Inferno</sl-menu-item>
+              <sl-menu-item value="magma">Magma</sl-menu-item>
+              <sl-menu-item value="gammaII">Gamma II</sl-menu-item>
+              <sl-menu-item value="blue">Blue</sl-menu-item>
+              <sl-menu-item value="green">Green</sl-menu-item>
+              <sl-menu-item value="orange">Orange</sl-menu-item>
+              <sl-menu-item value="purple">Purple</sl-menu-item>
+              <sl-menu-item value="red">Red</sl-menu-item>
+            </sl-menu>
+          </sl-dropdown>
+
+          <sl-dropdown>
+            <sl-button slot="trigger" caret>${unsafeSVG(lucideAudioWaveform)} Window Function</sl-button>
+            <sl-menu>
+              <sl-menu-item value="">None</sl-menu-item>
+              <sl-menu-item value="hann" selected>Hann</sl-menu-item>
+              <sl-menu-item value="hamming">Hamming</sl-menu-item>
+              <sl-menu-item value="lanczos">Lanczos</sl-menu-item>
+              <sl-menu-item value="gaussian">Gaussian</sl-menu-item>
+              <sl-menu-item value="tukey">Tukey</sl-menu-item>
+              <sl-menu-item value="blackman">Blackman</sl-menu-item>
+              <sl-menu-item value="exact-blackman">Exact Blackman</sl-menu-item>
+              <sl-menu-item value="blackman-harris">Blackman Harris</sl-menu-item>
+              <sl-menu-item value="backman-nuttall">Blackman Nuttall</sl-menu-item>
+              <sl-menu-item value="kaiser">Kaiser</sl-menu-item>
+              <sl-menu-item value="flat-top">Flat Top</sl-menu-item>
+            </sl-menu>
+          </sl-dropdown>
+
+          <sl-dropdown>
+            <sl-button slot="trigger" caret>${unsafeSVG(lucideProportions)} Window Size</sl-button>
+            <sl-menu>
+              <sl-menu-item value="128">128</sl-menu-item>
+              <sl-menu-item value="256">256</sl-menu-item>
+              <sl-menu-item value="512" selected>512</sl-menu-item>
+              <sl-menu-item value="1024">1024</sl-menu-item>
+              <sl-menu-item value="2048">2048</sl-menu-item>
+            </sl-menu>
+          </sl-dropdown>
+
+          <sl-dropdown>
+            <sl-button slot="trigger" caret>${unsafeSVG(lucideBlend)} Window Overlap</sl-button>
+            <sl-menu>
+              <sl-menu-item value="0" selected>None</sl-menu-item>
+              <sl-menu-item value="128">128</sl-menu-item>
+              <sl-menu-item value="256">256</sl-menu-item>
+              <sl-menu-item value="512">512</sl-menu-item>
+              <sl-menu-item value="1024">1024</sl-menu-item>
+            </sl-menu>
+          </sl-dropdown>
+
+          <sl-dropdown>
+            <sl-button slot="target" caret>${unsafeSVG(lucideRuler)} Scale</sl-button>
+            <sl-menu>
+              <sl-menu-item value="false" selected>Linear</sl-menu-item>
+              <sl-menu-item value="true">Mel</sl-menu-item>
+            </sl-menu>
+          </sl-dropdown>
+
+          <sl-dropdown>
+            <sl-button slot="trigger" caret>${unsafeSVG(lucideSun)} Brightness</sl-button>
+            <sl-menu>
+              <input type="number" value="0" step="0.05" />
+            </sl-menu>
+          </sl-dropdown>
+
+          <sl-dropdown>
+            <sl-button slot="trigger" caret>${unsafeSVG(lucideContrast)} Contrast</sl-button>
+            <sl-menu>
+              <input type="number" value="1" step="0.05" />
+            </sl-menu>
+          </sl-dropdown>
         </div>
 
         <div class="content">${this.currentSettingsTemplate}</div>

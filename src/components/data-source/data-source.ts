@@ -23,8 +23,8 @@ export class DataSource extends AbstractComponent(LitElement) {
   @property({ type: Boolean, converter: booleanConverter })
   public local!: boolean;
 
+  public fileType: SupportedFileTypes = "json";
   private verificationGrid: VerificationGrid | undefined;
-  private fileType: SupportedFileTypes = "json";
 
   public willUpdate(changedProperties: PropertyValues<this>): void {
     if (changedProperties.has("for") && !!this.for) {
@@ -46,9 +46,8 @@ export class DataSource extends AbstractComponent(LitElement) {
 
     // it is possible to have no src attribute if the file is expected to be
     // provided locally through the src attribute
-    // TODO: this should not be an error
     if (!this.src) {
-      throw new Error();
+      return [];
     }
 
     const response = await fetch(this.src);
@@ -127,6 +126,7 @@ export class DataSource extends AbstractComponent(LitElement) {
         }
 
         this.verificationGrid.getPage = fetcher;
+        this.verificationGrid.dataSource = this;
       }
     };
 
@@ -160,6 +160,7 @@ export class DataSource extends AbstractComponent(LitElement) {
     }
 
     this.verificationGrid.getPage = fetcher;
+    this.verificationGrid.dataSource = this;
   }
 
   private fileInputTemplate(): TemplateResult<1> {

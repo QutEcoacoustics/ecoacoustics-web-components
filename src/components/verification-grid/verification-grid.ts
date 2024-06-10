@@ -11,6 +11,8 @@ import { Parser } from "@json2csv/plainjs";
 import { VerificationParser } from "../../services/verificationParser";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import lucideCircleHelp from "lucide-static/icons/circle-help.svg?raw";
+import { classMap } from "lit/directives/class-map.js";
+import { DataSource } from "../../../playwright";
 
 export type SelectionObserverType = "desktop" | "tablet";
 export type PageFetcher = (elapsedItems: number) => Promise<any[]>;
@@ -85,9 +87,9 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   public loading = false;
 
   public decisions: Verification[] = [];
+  public dataSource: DataSource | undefined;
   private spectrogramsLoaded = 0;
   private hiddenTiles = 0;
-  private fileType: "json" | "csv" = "json";
 
   // TODO: find a better way to do this
   private showingSelectionShortcuts = false;
@@ -238,6 +240,8 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
         this.handleDesktopSelection(selectionEvent);
         break;
     }
+
+    this.requestUpdate();
   }
 
   /**
@@ -319,6 +323,23 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     for (const element of elements) {
       element.selected = false;
     }
+  }
+
+  private canNavigatePrevious(): boolean {
+    return this.pagedItems > 0;
+  }
+
+  private canNavigateNext(): boolean {
+    return !(this.hiddenTiles >= this.gridSize);
+  }
+
+  private previousPage(): void {
+    if (!this.canNavigatePrevious()) {
+      return;
+    }
+
+    this.pagedItems -= this.gridSize;
+    this.renderVirtualPage();
   }
 
   private catchDecision(event: DecisionEvent) {
@@ -575,8 +596,10 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   // TODO: clean up this function
   // TODO: there is a "null" in additional tags (if none)
   private downloadResults(): void {
+    console.log("datasource", this.dataSource);
+
     let formattedResults = "";
-    const fileFormat = this.fileType;
+    const fileFormat = this.dataSource?.fileType ?? "json";
     const results = this.decisions.map((decision: Verification) => {
       const subject = decision.subject;
       const tag = decision.tag?.text;
@@ -617,6 +640,22 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     }
   }
 
+  private currentSubSelection(): Verification[] {
+    const gridTiles = Array.from(this.gridTiles);
+    return gridTiles.filter((tile) => tile.selected).map((tile) => tile.model);
+  }
+
+  private decisionPrompt(): TemplateResult<1> {
+    const subSelection = this.currentSubSelection();
+    const subSelectionCount = subSelection.length;
+
+    if (subSelectionCount > 0) {
+      return html`<p>Are all of the selected ${subSelectionCount} a</p>`;
+    }
+
+    return html`<p>Are all of these a</p>`;
+  }
+
   private highlightBoxTemplate(): TemplateResult<1> {
     return html`<div
       id="highlight-box"
@@ -641,7 +680,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
       <div class="keyboard-shortcuts">
         ${shortcuts.map(
           (shortcut) => html`<div class="row">
-            <kbd class="key">${shortcut.key}</kbd>
+            ${shortcut.key.split(" ").map((key) => html`<kbd class="key">${key}</kbd>`)}
             <span class="description">${shortcut.description}</span>
           </div>`,
         )}
@@ -651,11 +690,11 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
   private helpDialogTemplate(): TemplateResult<1> {
     const selectionKeyboardShortcuts: KeyboardShortcut[] = [
-      { key: "Ctrl + A", description: "Select all items" },
-      { key: "Shift + Click", description: "Add a range of items to the sub-selection" },
-      { key: "Ctrl + Click", description: "Toggle the selection of a single item" },
-      { key: "Ctrl + Shift + Click", description: "Select a range of items" },
-      { key: "Escape", description: "Deselect all items" },
+      { key: "Ctrl A", description: "Select all items" },
+      { key: "Shift Click", description: "Add a range of items to the sub-selection" },
+      { key: "Ctrl Click", description: "Toggle the selection of a single item" },
+      { key: "Ctrl Shift Click", description: "Select a range of items" },
+      { key: "Esc", description: "Deselect all items" },
     ];
 
     // decision shortcuts are fetched from the decision elements
@@ -680,29 +719,29 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
             </p>
           </section>
 
-          <section>
-            <h2>Decisions</h2>
+          <div class="dialog-content">
+            <section>
+              <h2>Sub-Selection</h2>
+              <p>
+                You can apply a decision to only a few items in the grid by clicking on them, or using one of the
+                keyboard shortcuts below.
+              </p>
 
-            <h3>Keyboard Shortcuts</h3>
-            ${this.keyboardShortcutTemplate(decisionShortcuts)}
-          </section>
+              <p>
+                You can also use <kbd>Alt</kbd> + <kbd><i>a number</i></kbd> (e.g. <kbd>Alt</kbd> + <kbd>1</kbd>) to
+                select a tile using you keyboard. It is possible to see the possible keyboard shortcuts for selection by
+                holding down the <kbd>Alt</kbd> key.
+              </p>
 
-          <section>
-            <h2>Sub-Selection</h2>
-            <p>
-              You can apply a decision to only a few items in the grid by clicking on them, or using one of the keyboard
-              shortcuts below.
-            </p>
+              <h3>Keyboard Shortcuts</h3>
+              ${this.keyboardShortcutTemplate(selectionKeyboardShortcuts)}
+            </section>
 
-            <p>
-              You can also use <kbd>Alt</kbd> + <kbd><i>an number</i></kbd> (e.g. <kbd>Alt</kbd> + <kbd>1</kbd>) to
-              select a tile using you keyboard. It is possible to see the possible keyboard shortcuts for selection by
-              holding down the <kbd>Alt</kbd> key.
-            </p>
-
-            <h3>Keyboard Shortcuts</h3>
-            ${this.keyboardShortcutTemplate(selectionKeyboardShortcuts)}
-          </section>
+            <section>
+              <h2>Decisions</h2>
+              ${this.keyboardShortcutTemplate(decisionShortcuts)}
+            </section>
+          </div>
 
           <hr />
 
@@ -737,21 +776,29 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
         >
           ${this.spectrogramElements}
         </div>
-        <h2 class="verification-controls-title">Are all of these a</h2>
+
         <div class="verification-controls">
-          <span>
-            <button class="oe-btn oe-btn-secondary">Previous</button>
-          </span>
-
-          <span class="decision-controls">
-            <slot @decision="${this.catchDecision}"></slot>
-          </span>
-
-          <span>
-            <button @click="${this.downloadResults}" class="oe-btn oe-btn-secondary">Download Results</button>
+          <span class="decision-controls-left">
             <button @click="${() => this.helpDialogElement.showModal()}" class="oe-btn oe-btn-secondary">
               ${unsafeSVG(lucideCircleHelp)}
             </button>
+            <button
+              class="oe-btn oe-btn-secondary ${classMap({ disabled: !this.canNavigatePrevious() })}"
+              @click="${() => this.previousPage()}"
+            >
+              Previous
+            </button>
+          </span>
+
+          <span class="decision-controls ${classMap({ disabled: !this.canNavigateNext() })}">
+            <h2 class="verification-controls-title">${this.decisionPrompt()}</h2>
+            <div class="decision-control-actions">
+              <slot @decision="${this.catchDecision}"></slot>
+            </div>
+          </span>
+
+          <span class="decision-controls-right">
+            <button @click="${this.downloadResults}" class="oe-btn oe-btn-secondary">Download Results</button>
           </span>
         </div>
       </div>

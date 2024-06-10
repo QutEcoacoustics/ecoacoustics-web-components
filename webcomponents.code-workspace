@@ -47,7 +47,8 @@
       "webcomponents-workspace",
       "webfft",
       "worklet",
-      "lucide"
+      "lucide",
+      "roboto"
     ],
     "cSpell.ignorePaths": ["**/node_modules/**", "**/dist/**", "webcomponents.code-workspace"],
     "markdownlint.config": {

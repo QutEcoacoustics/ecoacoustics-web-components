@@ -7,6 +7,7 @@ export const spectrogramStyles = css`
 
   #spectrogram-container {
     position: relative;
+    background-color: #c2c2c2;
     width: 100%;
     height: 100%;
   }

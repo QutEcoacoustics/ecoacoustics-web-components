@@ -80,7 +80,7 @@ export class Decision extends AbstractComponent(LitElement) {
     // the OE Verification model for every tag option
     // the same logic should be used for a single tag, but it should only emit
     // one tag (because there is only one tag)
-    const additionalTags = this.additionalTags?.split(",").map((tag) => tag.trim());
+    const additionalTags = this.additionalTags?.split(",").map((tag) => tag.trim()) ?? [];
 
     // I focus on the button clicked with keyboard shortcuts
     // so that the user gets some visual feedback on what button they clicked
@@ -105,13 +105,19 @@ export class Decision extends AbstractComponent(LitElement) {
     const keyboardLegend =
       this.shortcut && this.selectionMode === "desktop" ? html`<kbd>${this.shortcut.toUpperCase()}</kbd>` : nothing;
 
+    // I use aria-disabled here because if the disabled state is caught by the
+    // emitDecision method
+    // however, if we set the disabled attribute on this element, when the user
+    // selects a decision, the button will lose focus (which is not what we want)
+    // therefore, to prevent this from happening, we catch the disabled state
+    // in the click handler and set aria-disabled to true
     return html`
       <button
         id="decision-button"
         class="oe-btn oe-btn-secondary ${classMap({ disabled: !!this.disabled })}"
         part="decision-button"
         title="Shortcut: ${this.shortcut}"
-        ?disabled=${this.disabled}
+        aria-disabled="${this.disabled}"
         @click="${this.emitDecision}"
       >
         <div class="tag-text"><slot></slot></div>

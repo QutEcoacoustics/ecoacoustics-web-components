@@ -18,6 +18,7 @@ export const mediaControlsStyles = css`
   #spectrogram-settings {
     position: relative;
     overflow: hidden;
+    max-width: 300px;
 
     .settings-menu {
       display: inline-flex;

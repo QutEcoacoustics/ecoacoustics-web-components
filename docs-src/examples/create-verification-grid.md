@@ -76,6 +76,27 @@ internet will be able to access your website._
 Netlify is a website that publishes your websites to the internet and allows other
 people to use your website (such as the verification grid created before).
 
+### Creating a Netlify Site
+
+You first have to create a Netlify site by going to the following url:
+[app.netlify.com](https://app.netlify.com/).
+
+If you forget to log in, spectrograms will fail to render with the error
+`Error: SharedArrayBuffer is not defined.`, and the website that you create
+will only be available for one hour.
+
+---
+
+Create your website by creating a new directory with the name of you website
+e.g. "Koala Verification Grid"
+Add the `index.html` file created above with the following `netlify.toml` file
+to this new directory.
+
+By adding the following `netlify.toml`, you allow the website to run high
+performance code such as `SharedArrayBuffer`.
+Without the following config file, you will get the error
+`Error: SharedArrayBuffer is not defined.`
+
 ```toml
 # netlify.toml
 [[headers]]
@@ -86,6 +107,30 @@ people to use your website (such as the verification grid created before).
     Cross-Origin-Embedder-Policy = "require-corp"
 ```
 
-### Creating a Netlify Site
+You should now have a folder with the following contents:
 
-1. Create an account for [netlify.com](app.netlify.com)
+```txt
+Koala Verification Grid/
+  - index.html
+  - netlify.toml
+```
+
+#### Deploying Your Verification Grid
+
+**Warning!**
+It is important to note that by deploying your website, any person on the
+internet will be able to access it and any data associated with it.
+Attackers regularly search the entire internet for websites, so security through
+obscurity is not a plausible defense against your data being leaked if you
+upload it.
+
+---
+
+To deploy your website go to
+[app.netlify.com/drop](https://app.netlify.com/drop)
+and drag and drop the folder/directory that contains your `index.html` and
+`netlify.toml` file.
+
+You have now deployed your verification grid.
+After deployment, netlify will provide you with a link that you can send to
+anyone that has access to the internet.

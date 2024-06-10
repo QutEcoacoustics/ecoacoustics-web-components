@@ -18,25 +18,31 @@ export const verificationGridStyles = css`
   }
 
   #help-dialog {
-    position: relative;
-    min-width: 70%;
-    min-height: 70%;
-    background-color: var(--oe-panel-color);
-    border: 3px solid var(--oe-selected-color);
-    border-radius: var(--oe-border-rounding);
-    padding: 0px;
-
-    &::backdrop {
+    h1 {
+      font-weight: 600;
     }
 
     h2,
     h3 {
-      font-weight: normal;
+      font-weight: 500;
+      margin-bottom: 0;
+    }
+
+    hr {
+      position: relative;
+      margin-top: 1em;
+      margin-bottom: 1.5em;
     }
 
     .dialog-container {
       position: relative;
       margin: 2rem;
+    }
+
+    .dialog-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 10%;
     }
 
     .dialog-controls {
@@ -46,9 +52,6 @@ export const verificationGridStyles = css`
       .close-btn {
         display: block;
         cursor: pointer;
-      }
-
-      .show-again {
       }
     }
   }
@@ -108,13 +111,24 @@ export const verificationGridStyles = css`
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
-    align-items: stretch;
+    align-items: center;
     padding: 1rem;
     gap: 1rem;
     color: var(--oe-font-color);
+  }
 
-    button {
-      height: 100%;
+  .decision-controls {
+    h2 {
+      display: block;
     }
+
+    .decision-control-actions {
+      display: flex;
+    }
+  }
+
+  .decision-controls-left,
+  .decision-controls-right {
+    display: flex;
   }
 `;
