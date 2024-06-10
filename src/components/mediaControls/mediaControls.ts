@@ -1,5 +1,5 @@
-import { LitElement, PropertyValues, TemplateResult, html } from "lit";
-import { customElement, property, query } from "lit/decorators.js";
+import { LitElement, PropertyValues, TemplateResult, html, nothing } from "lit";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { mediaControlsStyles } from "./css/style";
 import { ILogger, rootContext } from "../logger/logger";
 import { provide } from "@lit/context";
@@ -42,6 +42,10 @@ export class MediaControls extends AbstractComponent(LitElement) {
 
   @query("#spectrogram-settings")
   private spectrogramSettingsForm!: HTMLFormElement;
+
+  @state()
+  private currentSettingsTemplate: TemplateResult<1> | null = null;
+  private currentSetting: string | null = null;
 
   private spectrogramElement?: Spectrogram | null;
   private playHandler = this.handleUpdatePlaying.bind(this);
@@ -91,22 +95,22 @@ export class MediaControls extends AbstractComponent(LitElement) {
   // TODO: clean up this function, it is terrible
   private updateSpectrogramOptions(): void {
     if (!this.spectrogramElement) {
+      console.log("returning");
       return;
     }
 
     const formData = new FormData(this.spectrogramSettingsForm);
     const formObject = Object.fromEntries(formData);
-    const newSpectrogramOptions = new SpectrogramOptions(
-      Number(formObject.windowSize),
-      Number(formObject.windowOverlap),
-      formObject.windowFunction as any,
-      formObject.melScale === "true",
-      Number(formObject.brightness),
-      Number(formObject.contrast),
-      formObject.colorMap as any,
-    );
 
-    this.spectrogramElement.spectrogramOptions = newSpectrogramOptions;
+    for (const [key, value] of Object.entries(formObject)) {
+      if (key === "brightness" || key === "contrast" || key === "windowSize" || key === "windowOverlap") {
+        (this.spectrogramElement[key] as any) = Number(value);
+      } else if (key === "melScale") {
+        (this.spectrogramElement[key] as any) = value === "true";
+      } else {
+        ((this.spectrogramElement as any)[key as any] as any) = value;
+      }
+    }
   }
 
   private playIcon() {
@@ -119,130 +123,144 @@ export class MediaControls extends AbstractComponent(LitElement) {
 
   private preferencesTemplate(title: string, summaryTemplate: any, template: TemplateResult<1>) {
     return html`
-      <details>
-        <summary title="${title}">${summaryTemplate}</summary>
-        <div class="content">${template}</div>
-      </details>
+      <span>
+        <a
+          title="${title}"
+          @click="${() => {
+            const isCurrentlySelected = this.currentSetting === title;
+
+            !isCurrentlySelected ? (this.currentSettingsTemplate = template) : (this.currentSettingsTemplate = null);
+
+            this.currentSetting = isCurrentlySelected ? null : title;
+          }}"
+        >
+          ${summaryTemplate}
+        </a>
+      </span>
     `;
   }
 
   private spectrogramSettingsTemplate(): TemplateResult<1> {
     return html`
       <form id="spectrogram-settings" @change="${this.updateSpectrogramOptions}">
-        ${this.preferencesTemplate(
-          "Colour Pallette",
-          unsafeSVG(lucidePalette),
-          html`
-            <label>
-              Colour Pallette
-              <select name="colorMap">
-                <option value="grayscale">Grayscale</option>
-                <option value="audacity" selected>Audacity</option>
-                <option value="raven">Raven</option>
-                <option value="cubeHelix">Cube Helix</option>
-                <option value="viridis">Viridis</option>
-                <option value="turbo">Turbo</option>
-                <option value="plasma">Plasma</option>
-                <option value="inferno">Inferno</option>
-                <option value="magma">Magma</option>
-                <option value="gammaII">Gamma II</option>
-                <option value="blue">Blue</option>
-                <option value="green">Green</option>
-                <option value="orange">Orange</option>
-                <option value="purple">Purple</option>
-                <option value="red">Red</option>
-              </select>
-            </label>
-          `,
-        )}
-        ${this.preferencesTemplate(
-          "Window Function",
-          unsafeSVG(lucideAudioWaveform),
-          html`
-            <label>
-              Window Function
-              <select name="windowFunction">
-                <option value="">None</option>
-                <option value="hann" selected>Hann</option>
-                <option value="hamming">Hamming</option>
-                <option value="lanczos">Lanczos</option>
-                <option value="gaussian">Gaussian</option>
-                <option value="tukey">Tukey</option>
-                <option value="blackman">Blackman</option>
-                <option value="exact-blackman">Exact Blackman</option>
-                <option value="blackman-harris">Blackman Harris</option>
-                <option value="backman-nuttall">Blackman Nuttall</option>
-                <option value="kaiser">Kaiser</option>
-                <option value="flat-top">Flat Top</option>
-              </select>
-            </label>
-          `,
-        )}
-        ${this.preferencesTemplate(
-          "Window Size",
-          unsafeSVG(lucideProportions),
-          html`
-            <label>
-              Window Size
-              <select name="windowSize">
-                <option value="128">128</option>
-                <option value="256">256</option>
-                <option value="512" selected>512</option>
-                <option value="1024">1024</option>
-                <option value="2048">2048</option>
-              </select>
-            </label>
-          `,
-        )}
-        ${this.preferencesTemplate(
-          "Window Overlap",
-          unsafeSVG(lucideBlend),
-          html`
-            <label>
-              Window Overlap
-              <select name="windowOverlap">
-                <option value="0" selected>None</option>
-                <option value="128">128</option>
-                <option value="256">256</option>
-                <option value="512">512</option>
-                <option value="1024">1024</option>
-              </select>
-            </label>
-          `,
-        )}
-        ${this.preferencesTemplate(
-          "Scale",
-          unsafeSVG(lucideRuler),
-          html`
-            <label>
-              Scale
-              <select name="melScale">
-                <option value="false" selected>Linear</option>
-                <option value="true">Mel</option>
-              </select>
-            </label>
-          `,
-        )}
-        ${this.preferencesTemplate(
-          "Brightness",
-          unsafeSVG(lucideSun),
-          html`
-            <label>
-              Brightness
-              <input type="number" value="0" step="0.05" name="brightness" />
-            </label>
-          `,
-        )}
-        ${this.preferencesTemplate(
-          "Contrast",
-          unsafeSVG(lucideContrast),
-          html`
-            <label>
-              Contrast
-              <input type="number" value="1" step="0.05" name="contrast" />
-            </label>
-          `,
-        )}
+        <div class="settings-menu">
+          ${this.preferencesTemplate(
+            "Colour Pallette",
+            unsafeSVG(lucidePalette),
+            html`
+              <label>
+                Colour Pallette
+                <select name="colorMap">
+                  <option value="grayscale">Grayscale</option>
+                  <option value="audacity" selected>Audacity</option>
+                  <option value="raven">Raven</option>
+                  <option value="cubeHelix">Cube Helix</option>
+                  <option value="viridis">Viridis</option>
+                  <option value="turbo">Turbo</option>
+                  <option value="plasma">Plasma</option>
+                  <option value="inferno">Inferno</option>
+                  <option value="magma">Magma</option>
+                  <option value="gammaII">Gamma II</option>
+                  <option value="blue">Blue</option>
+                  <option value="green">Green</option>
+                  <option value="orange">Orange</option>
+                  <option value="purple">Purple</option>
+                  <option value="red">Red</option>
+                </select>
+              </label>
+            `,
+          )}
+          ${this.preferencesTemplate(
+            "Window Function",
+            unsafeSVG(lucideAudioWaveform),
+            html`
+              <label>
+                Window Function
+                <select name="windowFunction">
+                  <option value="">None</option>
+                  <option value="hann" selected>Hann</option>
+                  <option value="hamming">Hamming</option>
+                  <option value="lanczos">Lanczos</option>
+                  <option value="gaussian">Gaussian</option>
+                  <option value="tukey">Tukey</option>
+                  <option value="blackman">Blackman</option>
+                  <option value="exact-blackman">Exact Blackman</option>
+                  <option value="blackman-harris">Blackman Harris</option>
+                  <option value="backman-nuttall">Blackman Nuttall</option>
+                  <option value="kaiser">Kaiser</option>
+                  <option value="flat-top">Flat Top</option>
+                </select>
+              </label>
+            `,
+          )}
+          ${this.preferencesTemplate(
+            "Window Size",
+            unsafeSVG(lucideProportions),
+            html`
+              <label>
+                Window Size
+                <select name="windowSize">
+                  <option value="128">128</option>
+                  <option value="256">256</option>
+                  <option value="512" selected>512</option>
+                  <option value="1024">1024</option>
+                  <option value="2048">2048</option>
+                </select>
+              </label>
+            `,
+          )}
+          ${this.preferencesTemplate(
+            "Window Overlap",
+            unsafeSVG(lucideBlend),
+            html`
+              <label>
+                Window Overlap
+                <select name="windowOverlap">
+                  <option value="0" selected>None</option>
+                  <option value="128">128</option>
+                  <option value="256">256</option>
+                  <option value="512">512</option>
+                  <option value="1024">1024</option>
+                </select>
+              </label>
+            `,
+          )}
+          ${this.preferencesTemplate(
+            "Scale",
+            unsafeSVG(lucideRuler),
+            html`
+              <label>
+                Scale
+                <select name="melScale">
+                  <option value="false" selected>Linear</option>
+                  <option value="true">Mel</option>
+                </select>
+              </label>
+            `,
+          )}
+          ${this.preferencesTemplate(
+            "Brightness",
+            unsafeSVG(lucideSun),
+            html`
+              <label>
+                Brightness
+                <input type="number" value="0" step="0.05" name="brightness" />
+              </label>
+            `,
+          )}
+          ${this.preferencesTemplate(
+            "Contrast",
+            unsafeSVG(lucideContrast),
+            html`
+              <label>
+                Contrast
+                <input type="number" value="1" step="0.05" name="contrast" />
+              </label>
+            `,
+          )}
+        </div>
+
+        <div class="content">${this.currentSettingsTemplate}</div>
       </form>
     `;
   }
@@ -250,9 +268,9 @@ export class MediaControls extends AbstractComponent(LitElement) {
   public render() {
     return html`
       <div class="container">
-        <button id="action-button" class="oe-btn oe-btn-primary" @click="${this.toggleAudio}">
+        <a id="action-button" @click="${this.toggleAudio}">
           ${this.isSpectrogramPlaying() ? this.pauseIcon() : this.playIcon()}
-        </button>
+        </a>
 
         ${this.spectrogramSettingsTemplate()}
       </div>

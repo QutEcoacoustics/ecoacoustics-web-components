@@ -695,8 +695,9 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
             </p>
 
             <p>
-              You can also use <kbd>Alt + number</kbd> to select a tile using you keyboard. It is possible to see the
-              possible keyboard shortcuts for selection by holding down the <kbd>Alt</kbd> key.
+              You can also use <kbd>Alt</kbd> + <kbd><i>an number</i></kbd> (e.g. <kbd>Alt</kbd> + <kbd>1</kbd>) to
+              select a tile using you keyboard. It is possible to see the possible keyboard shortcuts for selection by
+              holding down the <kbd>Alt</kbd> key.
             </p>
 
             <h3>Keyboard Shortcuts</h3>

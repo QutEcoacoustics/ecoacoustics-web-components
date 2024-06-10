@@ -53,7 +53,9 @@ Some important code snippets that you can modify above:
 
 You can change the text shown in the browser tab by modifying the `<title></title>` elements content.
 
-For example: If you want to change the title of your verification component from _OE Bat Verification Grid_ to _Koala Verification Grid_, you would change the text in between the `<title>` code to the following.
+For example: If you want to change the title of your verification component from
+_OE Bat Verification Grid_ to _Koala Verification Grid_, you would change the
+text in between the `<title>` code to the following.
 
 ```html
 <title>Koala Verification Grid</title>
@@ -84,7 +86,6 @@ people to use your website (such as the verification grid created before).
     Cross-Origin-Embedder-Policy = "require-corp"
 ```
 
-#### Publishing Your Verification Grid
+### Creating a Netlify Site
 
-To publish your website, simply drag and drop both the `index.html` and `netlify.toml`
-files into [app.netlify.com/drop](https://app.netlify.com/drop).
+1. Create an account for [netlify.com](app.netlify.com)
