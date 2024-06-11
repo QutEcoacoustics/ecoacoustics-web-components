@@ -1,4 +1,4 @@
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { AbstractComponent } from "../../mixins/abstractComponent";
 import { html, LitElement, nothing, PropertyValues, TemplateResult } from "lit";
 import { PageFetcher, VerificationGrid } from "../verification-grid/verification-grid";
@@ -23,11 +23,17 @@ export class DataSource extends AbstractComponent(LitElement) {
   @property({ type: Boolean, converter: booleanConverter })
   public local!: boolean;
 
+  @state()
+  private fileName: string | null = null;
+
+  @query("input[type=file]")
+  private fileInput!: HTMLInputElement;
+
   public fileType: SupportedFileTypes = "json";
   private verificationGrid: VerificationGrid | undefined;
 
   public willUpdate(changedProperties: PropertyValues<this>): void {
-    if (changedProperties.has("for") && !!this.for) {
+    if ((changedProperties.has("for") && !!this.for) || (changedProperties.has("src") && !!this.src)) {
       const verificationElement = document.querySelector<VerificationGrid>(`#${this.for}`);
 
       if (!verificationElement) {
@@ -98,36 +104,18 @@ export class DataSource extends AbstractComponent(LitElement) {
       return;
     }
 
+    if (!this.verificationGrid) {
+      return;
+    }
+
     const reader = new FileReader();
 
     reader.onload = async () => {
       const contents = reader.result as string;
-      const fileType = this.fileFormat(contents[0]);
-
-      if (!this.verificationGrid) {
-        return;
-      }
-
-      if (fileType === "json") {
-        const jsonData = JSON.parse(contents);
-        const fetcher = this.buildCallback(jsonData);
-
-        if (!fetcher) {
-          return;
-        }
-
-        this.verificationGrid.getPage = fetcher;
-      } else {
-        const csvData = await csv().fromString(contents);
-        const fetcher = this.buildCallback(csvData);
-
-        if (!fetcher) {
-          return;
-        }
-
-        this.verificationGrid.getPage = fetcher;
-        this.verificationGrid.dataSource = this;
-      }
+      const blob = new Blob([contents], { type: file.type });
+      const url = URL.createObjectURL(blob);
+      this.fileName = file.name;
+      this.src = url;
     };
 
     reader.readAsText(file);
@@ -164,7 +152,19 @@ export class DataSource extends AbstractComponent(LitElement) {
   }
 
   private fileInputTemplate(): TemplateResult<1> {
-    return html`<input @change="${this.handleFileChange}" type="file" accept=".csv,.json" />`;
+    const handleClick = (event: PointerEvent) => {
+      event.preventDefault();
+      this.fileInput.click();
+    };
+
+    return html`
+      <div class="file-picker">
+        <button @pointerdown="${handleClick}" class="oe-btn-secondary">
+          ${this.src ? `File: ${this.fileName ?? this.src}` : "Browse files"}
+        </button>
+        <input @change="${this.handleFileChange}" type="file" accept=".csv,.json" class="hidden" />
+      </div>
+    `;
   }
 
   public render() {

@@ -1,5 +1,5 @@
 ---
-layout: example.11ty.js
+layout: layouts/default.11ty.js
 title: Open Ecoacoustics | Examples | Validation Interface (fake)
 ---
 
@@ -51,7 +51,8 @@ Some important code snippets that you can modify above:
 
 #### Changing the Title Shown in the Browser Tab
 
-You can change the text shown in the browser tab by modifying the `<title></title>` elements content.
+You can change the text shown in the browser tab by modifying the `<title></title>`
+elements content.
 
 For example: If you want to change the title of your verification component from
 _OE Bat Verification Grid_ to _Koala Verification Grid_, you would change the
@@ -63,7 +64,17 @@ text in between the `<title>` code to the following.
 
 #### Changing the Decisions
 
-You can change the
+Decisions are xyz.
+
+It is possible to change the decisions by adding and deleting the `oe-decision`
+code from above.
+You can verify if a tag is correct by using the `verified` and `tag` attributes.
+
+All decisions _should_ have an associated keyboard shortcut.
+This can be configured through the `shortcut` attribute.
+For example: By changing the `shortcut` attribute to `Y` (`shortcut="Y"`), when
+the <kbd>Y</kbd> key is clicked on the keyboard, the associated decision will be
+clicked.
 
 ### How to Publish Your Verification Grid
 

@@ -47,6 +47,9 @@ export class VerificationGridTile extends AbstractComponent(LitElement) {
   @property({ attribute: false })
   public model!: Verification;
 
+  @property({ type: String })
+  public color = "var(--oe-panel-color)";
+
   @state()
   public selected = false;
 
@@ -129,7 +132,11 @@ export class VerificationGridTile extends AbstractComponent(LitElement) {
 
   public render() {
     return html`
-      <div @click="${this.handleClick}" class="tile-container ${classMap({ selected: this.selected })}">
+      <div
+        @click="${this.handleClick}"
+        class="tile-container ${classMap({ selected: this.selected })}"
+        style="--decision-color: ${this.color}"
+      >
         ${this.keyboardShortcutTemplate()}
         <slot></slot>
       </div>

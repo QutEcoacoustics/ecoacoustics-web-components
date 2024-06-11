@@ -9,8 +9,9 @@ export * from "./decision/decision";
 export * from "./verification-grid-tile/verification-grid-tile";
 export * from "./info-card/info-card";
 export * from "./data-source/data-source";
+export * from "./verification-grid/help-dialog";
 
-// cherry pick shoelace components
+// TODO: cherry pick shoelace components
 // import "@shoelace-style/shoelace/dist/components/menu/menu.js";
 // import "@shoelace-style/shoelace/dist/components/dropdown/dropdown.js";
 // import "@shoelace-style/shoelace/dist/components/button/button.js";

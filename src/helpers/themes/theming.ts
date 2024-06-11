@@ -1,11 +1,13 @@
 import { css } from "lit";
 
 export const theming = css`
+  @import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
+
   /* TODO: we probably only need :host here */
   :host,
   :root {
     --oe-theme-hue: 247deg;
-    --oe-theme-saturation: 27%;
+    --oe-theme-saturation: 87%;
     --oe-theme-lightness: 95%;
 
     --oe-background-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) + 22%));
@@ -19,15 +21,15 @@ export const theming = css`
     --oe-border-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) - 10%));
     --oe-box-shadow: 1px 1px 1px currentcolor;
     --oe-font-family: "Roboto", sans-serif;
-    /* --oe-font-family: arial, sans-serif; */
     --oe-font-size: 11px;
 
+    --oe-spacing: 0.6em;
+
     --oe-primary-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) - 38%));
-    --oe-secondary-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) - 10%));
+    --oe-secondary-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) - 3%));
     --oe-accent-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) - 20%));
     --oe-info-color: hsl(207deg, var(--oe-theme-saturation), calc(var(--oe-theme-lightness) - 15%));
-    /* --oe-danger-color: hsl(0deg, 90%, 61%); */
-    --oe-danger-color: color-mix(in srgb, hsl(0deg, 90%, 61%) 75%, var(--oe-background-color));
+    --oe-danger-color: color-mix(in srgb, hsl(0deg, 80%, 46%) 85%, var(--oe-background-color));
     --oe-selected-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) - 5%));
     --oe-panel-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) + 2%));
 
@@ -112,17 +114,22 @@ export const theming = css`
     box-shadow: var(--oe-box-shadow);
     border: 2px solid var(--oe-selected-color);
     min-width: 70%;
-    min-height: 70%;
     max-width: 80%;
     max-height: 100%;
     background-color: var(--oe-background-color);
     border-radius: var(--oe-border-rounding);
-    padding: 0px;
+    padding: 2rem;
 
     animation: fade-in 600ms forwards;
 
     dialog[open] {
       animation: fade-in 600ms forwards;
+    }
+
+    /* Styles applied to mobile devices */
+    @media (max-width: 600px) {
+      max-width: 100%;
+      padding: 1rem;
     }
   }
 
@@ -146,8 +153,7 @@ export const theming = css`
   textarea,
   select {
     font-size: 1rem;
-    padding: 0.56em;
-    padding-left: 1em;
+    padding: var(--oe-spacing);
     border: none;
     border-radius: var(--oe-border-rounding);
     background-color: var(--oe-panel-color-lighter);
@@ -202,16 +208,15 @@ export const theming = css`
   */
   button {
     --background-color: var(--oe-panel-color);
+    --border: none;
     --ripple-color: color-mix(in srgb, var(--background-color) 90%, black);
 
-    border: none;
+    border: var(--border);
     border-radius: var(--oe-border-rounding);
     margin: 0.1rem;
-    font-size: 0.9rem;
+    font-size: 1em;
     max-width: max-content;
-    padding: 1em;
-    padding-left: 2rem;
-    padding-right: 2rem;
+    padding: var(--oe-spacing);
     background-color: var(--background-color);
     transition: background 0.3s;
 
@@ -219,17 +224,17 @@ export const theming = css`
       Box shadows make a button look raised and clickable.
       Therefore, if the button is disabled, we do not want to show the box shadow.
     */
-    &:not(:disabled) {
+    &:not(:disabled, :has(.disabled)) {
       box-shadow: var(--oe-box-shadow);
     }
 
-    &:hover:not(:disabled) {
+    &:hover:not(:disabled, :has(.disabled)) {
       background: var(--background-color) radial-gradient(circle, transparent 1%, var(--background-color) 1%)
         center/15000%;
       cursor: pointer;
     }
 
-    &:active:not(:disabled) {
+    &:active:not(:disabled, :has(.disabled)) {
       background-color: var(--ripple-color);
       background-size: 100%;
       transition: background 0s;
@@ -256,7 +261,7 @@ export const theming = css`
   }
 
   .oe-btn-info {
-    --background-color: var(--oe-info-color);
+    --border: 2px solid var(--oe-info-color);
   }
 
   .oe-btn-danger {

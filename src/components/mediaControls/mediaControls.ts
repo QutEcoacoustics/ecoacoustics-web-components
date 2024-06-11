@@ -1,20 +1,19 @@
 import { LitElement, PropertyValues, TemplateResult, html } from "lit";
-import { customElement, property, query, state } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import { mediaControlsStyles } from "./css/style";
 import { ILogger, rootContext } from "../logger/logger";
 import { provide } from "@lit/context";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { AbstractComponent } from "../../mixins/abstractComponent";
 import { Spectrogram } from "spectrogram/spectrogram";
+import { SlMenuItem } from "@shoelace-style/shoelace";
+import { SpectrogramOptions } from "../../helpers/audio/models";
 import lucidPlayIcon from "lucide-static/icons/play.svg?raw";
 import lucidPauseIcon from "lucide-static/icons/pause.svg?raw";
-import lucidePalette from "lucide-static/icons/palette.svg?raw";
-import lucideAudioWaveform from "lucide-static/icons/audio-waveform.svg?raw";
-import lucideProportions from "lucide-static/icons/proportions.svg?raw";
-import lucideBlend from "lucide-static/icons/blend.svg?raw";
-import lucideRuler from "lucide-static/icons/ruler.svg?raw";
-import lucideSun from "lucide-static/icons/sun.svg?raw";
-import lucideContrast from "lucide-static/icons/contrast.svg?raw";
+import lucideSettingsIcon from "lucide-static/icons/settings.svg?raw";
+import lucidePalletteIcon from "lucide-static/icons/palette.svg?raw";
+import lucideSunIcon from "lucide-static/icons/sun.svg?raw";
+import lucideContrastIcon from "lucide-static/icons/contrast.svg?raw";
 
 /**
  * A simple media player with play/pause and seek functionality that can be used with the open ecoacoustics spectrograms and components.
@@ -31,19 +30,13 @@ import lucideContrast from "lucide-static/icons/contrast.svg?raw";
 export class MediaControls extends AbstractComponent(LitElement) {
   public static styles = mediaControlsStyles;
 
+  @property({ type: String })
+  public for = "";
+
   @provide({ context: rootContext })
   public logger: ILogger = {
     log: console.log,
   };
-
-  @property({ type: String })
-  public for = "";
-
-  @query("#spectrogram-settings")
-  private spectrogramSettingsForm!: HTMLFormElement;
-
-  @state()
-  private currentSettingsTemplate: TemplateResult<1> | null = null;
 
   private spectrogramElement?: Spectrogram | null;
   private playHandler = this.handleUpdatePlaying.bind(this);
@@ -89,28 +82,6 @@ export class MediaControls extends AbstractComponent(LitElement) {
     return !this.spectrogramElement?.paused;
   }
 
-  // TODO: tighten this typing. It should be a form submit event
-  // TODO: clean up this function, it is terrible
-  private updateSpectrogramOptions(): void {
-    if (!this.spectrogramElement) {
-      console.log("returning");
-      return;
-    }
-
-    const formData = new FormData(this.spectrogramSettingsForm);
-    const formObject = Object.fromEntries(formData);
-
-    for (const [key, value] of Object.entries(formObject)) {
-      if (key === "brightness" || key === "contrast" || key === "windowSize" || key === "windowOverlap") {
-        (this.spectrogramElement[key] as any) = Number(value);
-      } else if (key === "melScale") {
-        (this.spectrogramElement[key] as any) = value === "true";
-      } else {
-        ((this.spectrogramElement as any)[key as any] as any) = value;
-      }
-    }
-  }
-
   private playIcon() {
     return html`<slot name="play-icon" part="play-icon">${unsafeSVG(lucidPlayIcon)}</slot>`;
   }
@@ -119,96 +90,118 @@ export class MediaControls extends AbstractComponent(LitElement) {
     return html`<slot name="pause-icon" part="pause-icon">${unsafeSVG(lucidPauseIcon)}</slot>`;
   }
 
-  private spectrogramSettingsTemplate(): TemplateResult<1> {
+  private selectSettingsTemplate(key: keyof SpectrogramOptions, text: any, values: string[]): TemplateResult<1> {
+    const changeHandler = (event: CustomEvent<{ item: SlMenuItem }>) => {
+      const newValue = event.detail.item.value;
+
+      const oldOptions = this.spectrogramElement!.spectrogramOptions;
+      this.spectrogramElement!.spectrogramOptions = {
+        ...oldOptions,
+        [key]: newValue,
+      } as any;
+    };
+
     return html`
-      <form id="spectrogram-settings" @change="${this.updateSpectrogramOptions}">
-        <div class="settings-menu">
-          <sl-dropdown>
-            <sl-button slot="trigger" caret>${unsafeSVG(lucidePalette)} Colour</sl-button>
-            <sl-menu>
-              <sl-menu-item value="grayscale">Grayscale</sl-menu-item>
-              <sl-menu-item value="audacity" selected>Audacity</sl-menu-item>
-              <sl-menu-item value="raven">Raven</sl-menu-item>
-              <sl-menu-item value="cubeHelix">Cube Helix</sl-menu-item>
-              <sl-menu-item value="viridis">Viridis</sl-menu-item>
-              <sl-menu-item value="turbo">Turbo</sl-menu-item>
-              <sl-menu-item value="plasma">Plasma</sl-menu-item>
-              <sl-menu-item value="inferno">Inferno</sl-menu-item>
-              <sl-menu-item value="magma">Magma</sl-menu-item>
-              <sl-menu-item value="gammaII">Gamma II</sl-menu-item>
-              <sl-menu-item value="blue">Blue</sl-menu-item>
-              <sl-menu-item value="green">Green</sl-menu-item>
-              <sl-menu-item value="orange">Orange</sl-menu-item>
-              <sl-menu-item value="purple">Purple</sl-menu-item>
-              <sl-menu-item value="red">Red</sl-menu-item>
-            </sl-menu>
-          </sl-dropdown>
+      <sl-menu-item>
+        ${text}
+        <sl-menu @sl-select="${changeHandler}" slot="submenu">
+          ${values.map((value: string) => html`<sl-menu-item value="${value}">${value}</sl-menu-item>`)}
+        </sl-menu>
+      </sl-menu-item>
+    `;
+  }
 
-          <sl-dropdown>
-            <sl-button slot="trigger" caret>${unsafeSVG(lucideAudioWaveform)} Window Function</sl-button>
-            <sl-menu>
-              <sl-menu-item value="">None</sl-menu-item>
-              <sl-menu-item value="hann" selected>Hann</sl-menu-item>
-              <sl-menu-item value="hamming">Hamming</sl-menu-item>
-              <sl-menu-item value="lanczos">Lanczos</sl-menu-item>
-              <sl-menu-item value="gaussian">Gaussian</sl-menu-item>
-              <sl-menu-item value="tukey">Tukey</sl-menu-item>
-              <sl-menu-item value="blackman">Blackman</sl-menu-item>
-              <sl-menu-item value="exact-blackman">Exact Blackman</sl-menu-item>
-              <sl-menu-item value="blackman-harris">Blackman Harris</sl-menu-item>
-              <sl-menu-item value="backman-nuttall">Blackman Nuttall</sl-menu-item>
-              <sl-menu-item value="kaiser">Kaiser</sl-menu-item>
-              <sl-menu-item value="flat-top">Flat Top</sl-menu-item>
-            </sl-menu>
-          </sl-dropdown>
+  private additionalSettingsTemplate(): TemplateResult<1> {
+    return html`
+      <sl-dropdown title="Additional Settings" hoist>
+        <button slot="trigger">${unsafeSVG(lucideSettingsIcon)}</button>
+        <sl-menu>
+          ${this.selectSettingsTemplate("windowFunction", "Window Function", [
+            "hann",
+            "hamming",
+            "cosine",
+            "lanczos",
+            "gaussian",
+            "tukey",
+            "blackman",
+            "exact_blackman",
+            "kaiser",
+            "nuttall",
+            "blackman_harris",
+            "blackman_nuttall",
+            "flat_top",
+          ])}
+          ${this.selectSettingsTemplate("windowSize", "Window Size", ["128", "256", "512", "1024", "2048"])}
+          ${this.selectSettingsTemplate("melScale", "Scale", ["linear", "mel"])}
+        </sl-menu>
+      </sl-dropdown>
+    `;
+  }
 
-          <sl-dropdown>
-            <sl-button slot="trigger" caret>${unsafeSVG(lucideProportions)} Window Size</sl-button>
-            <sl-menu>
-              <sl-menu-item value="128">128</sl-menu-item>
-              <sl-menu-item value="256">256</sl-menu-item>
-              <sl-menu-item value="512" selected>512</sl-menu-item>
-              <sl-menu-item value="1024">1024</sl-menu-item>
-              <sl-menu-item value="2048">2048</sl-menu-item>
-            </sl-menu>
-          </sl-dropdown>
+  private spectrogramSettingsTemplate(): TemplateResult<1> {
+    const changeColorHandler = (event: CustomEvent<{ item: SlMenuItem }>) => {
+      const newValue = event.detail.item.value;
 
-          <sl-dropdown>
-            <sl-button slot="trigger" caret>${unsafeSVG(lucideBlend)} Window Overlap</sl-button>
-            <sl-menu>
-              <sl-menu-item value="0" selected>None</sl-menu-item>
-              <sl-menu-item value="128">128</sl-menu-item>
-              <sl-menu-item value="256">256</sl-menu-item>
-              <sl-menu-item value="512">512</sl-menu-item>
-              <sl-menu-item value="1024">1024</sl-menu-item>
-            </sl-menu>
-          </sl-dropdown>
+      const oldOptions = this.spectrogramElement!.spectrogramOptions;
+      this.spectrogramElement!.spectrogramOptions = {
+        ...oldOptions,
+        colorMap: newValue,
+      } as any;
+    };
 
-          <sl-dropdown>
-            <sl-button slot="target" caret>${unsafeSVG(lucideRuler)} Scale</sl-button>
-            <sl-menu>
-              <sl-menu-item value="false" selected>Linear</sl-menu-item>
-              <sl-menu-item value="true">Mel</sl-menu-item>
-            </sl-menu>
-          </sl-dropdown>
+    const changeBrightnessHandler = (event: CustomEvent) => {
+      const newValue = (event.target as HTMLInputElement).value;
 
-          <sl-dropdown>
-            <sl-button slot="trigger" caret>${unsafeSVG(lucideSun)} Brightness</sl-button>
-            <sl-menu>
-              <input type="number" value="0" step="0.05" />
-            </sl-menu>
-          </sl-dropdown>
+      const oldOptions = this.spectrogramElement!.spectrogramOptions;
+      this.spectrogramElement!.spectrogramOptions = {
+        ...oldOptions,
+        brightness: newValue,
+      } as any;
+    };
 
-          <sl-dropdown>
-            <sl-button slot="trigger" caret>${unsafeSVG(lucideContrast)} Contrast</sl-button>
-            <sl-menu>
-              <input type="number" value="1" step="0.05" />
-            </sl-menu>
-          </sl-dropdown>
-        </div>
+    const changeContrastHandler = (event: CustomEvent) => {
+      const newValue = (event.target as HTMLInputElement).value;
 
-        <div class="content">${this.currentSettingsTemplate}</div>
-      </form>
+      const oldOptions = this.spectrogramElement!.spectrogramOptions;
+      this.spectrogramElement!.spectrogramOptions = {
+        ...oldOptions,
+        contrast: newValue,
+      } as any;
+    };
+
+    return html`
+      <sl-dropdown title="Colour" hoist>
+        <button slot="trigger">${unsafeSVG(lucidePalletteIcon)}</button>
+        <sl-menu @sl-select="${changeColorHandler}">
+          <sl-menu-item value="grayscale">Grayscale</sl-menu-item>
+          <sl-menu-item value="audacity">Audacity</sl-menu-item>
+          <sl-menu-item value="raven">Raven</sl-menu-item>
+          <sl-menu-item value="cubeHelix">Cube Helix</sl-menu-item>
+          <sl-menu-item value="viridis">Viridis</sl-menu-item>
+          <sl-menu-item value="turbo">Turbo</sl-menu-item>
+          <sl-menu-item value="plasma">Plasma</sl-menu-item>
+          <sl-menu-item value="inferno">Inferno</sl-menu-item>
+          <sl-menu-item value="magma">Magma</sl-menu-item>
+          <sl-menu-item value="gammaII">Gamma II</sl-menu-item>
+          <sl-menu-item value="blue">Blue</sl-menu-item>
+          <sl-menu-item value="green">Green</sl-menu-item>
+          <sl-menu-item value="orange">Orange</sl-menu-item>
+          <sl-menu-item value="purple">Purple</sl-menu-item>
+          <sl-menu-item value="red">Red</sl-menu-item>
+        </sl-menu>
+      </sl-dropdown>
+
+      <sl-dropdown title="Brightness" hoist>
+        <button slot="trigger">${unsafeSVG(lucideSunIcon)}</button>
+        <input @change="${changeBrightnessHandler}" type="number" step="0.1" placeholder="0" />
+      </sl-dropdown>
+
+      <sl-dropdown title="Contrast" hoist>
+        <button slot="trigger">${unsafeSVG(lucideContrastIcon)}</button>
+        <input @change="${changeContrastHandler}" type="number" step="0.1" placeholder="1" />
+      </sl-dropdown>
+
+      ${this.additionalSettingsTemplate()}
     `;
   }
 

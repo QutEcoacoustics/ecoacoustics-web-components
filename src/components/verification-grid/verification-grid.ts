@@ -11,20 +11,24 @@ import { Parser } from "@json2csv/plainjs";
 import { VerificationParser } from "../../services/verificationParser";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import lucideCircleHelp from "lucide-static/icons/circle-help.svg?raw";
-import { classMap } from "lit/directives/class-map.js";
 import { DataSource } from "../../../playwright";
+import { classMap } from "lit/directives/class-map.js";
+import { VerificationHelpDialog } from "./help-dialog";
+import colorBrewer from "colorbrewer";
 
-export type SelectionObserverType = "desktop" | "tablet";
+export type SelectionObserverType = "desktop" | "tablet" | "default";
 export type PageFetcher = (elapsedItems: number) => Promise<any[]>;
-type SelectionEvent = CustomEvent<{ shiftKey: boolean; ctrlKey: boolean; index: number }>;
-type DecisionEvent = CustomEvent<{ value: boolean; tag: string; additionalTags: string[] }>;
-
-interface KeyboardShortcut {
-  key: string;
-  description: string;
-}
-
-const helpPreferenceLocalStorageKey = "oe-verification-grid-dialog-preferences";
+type SelectionEvent = CustomEvent<{
+  shiftKey: boolean;
+  ctrlKey: boolean;
+  index: number;
+}>;
+type DecisionEvent = CustomEvent<{
+  value: boolean;
+  tag: string;
+  additionalTags: string[];
+  color: string;
+}>;
 
 /**
  * A verification grid component that can be used to validate and verify audio events
@@ -37,7 +41,7 @@ const helpPreferenceLocalStorageKey = "oe-verification-grid-dialog-preferences";
  * ```
  *
  * @property src - The source of the grid items
- * @property get-page - A callback function that returns a page from a page number
+ * @property get-page - A callback function that returns a page of recordings
  * @property grid-size - The number of items to display in a single grid
  * @property key - An object key to use as the audio source
  * @property selection-behavior {desktop | tablet}
@@ -60,7 +64,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   public pagedItems = 0;
 
   @property({ attribute: "selection-behavior", type: String, reflect: true })
-  public selectionBehavior: SelectionObserverType = "desktop";
+  public selectionBehavior: SelectionObserverType = "default";
 
   @property({ type: String })
   public audioKey!: string;
@@ -77,8 +81,8 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   @queryAll("oe-verification-grid-tile")
   public gridTiles!: NodeListOf<VerificationGridTile>;
 
-  @query("#help-dialog")
-  private helpDialogElement!: HTMLDialogElement;
+  @query("oe-verification-help-dialog")
+  private helpDialog!: VerificationHelpDialog;
 
   @state()
   private spectrogramElements: TemplateResult<1> | TemplateResult<1>[] | undefined;
@@ -123,11 +127,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   }
 
   public firstUpdated(): void {
-    const shouldShowHelpDialog = localStorage.getItem(helpPreferenceLocalStorageKey) === null;
-
-    if (shouldShowHelpDialog) {
-      this.helpDialogElement.showModal();
-    }
+    this.helpDialog.decisionElements = this.decisionElements;
   }
 
   protected updated(change: PropertyValueMap<this>): void {
@@ -139,10 +139,22 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     if (change.has("selectionBehavior")) {
       this.multiSelectHead = null;
 
+      let selectionBehavior = this.selectionBehavior;
+
+      if (selectionBehavior === "default") {
+        selectionBehavior = this.isTouchDevice() ? "tablet" : "desktop";
+      }
+
       this.decisionElements.forEach((element: Decision) => {
-        element.selectionMode = this.selectionBehavior;
+        element.selectionMode = selectionBehavior;
       });
     }
+
+    const colors = colorBrewer.Dark2[8];
+    this.decisionElements.forEach((element: Decision, i: number) => {
+      const color = colors[i];
+      element.color = color;
+    });
 
     // TODO: figure out if there is a better way to do this invalidation
     if (sourceInvalidationKeys.some((key) => change.has(key))) {
@@ -229,6 +241,9 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   // however, I deemed that it hurt readability and the perf hit is negligible
   private selectionHandler(selectionEvent: SelectionEvent): void {
     switch (this.selectionBehavior) {
+      case "default":
+        this.handleDefaultSelection(selectionEvent);
+        break;
       case "desktop":
         this.handleDesktopSelection(selectionEvent);
         break;
@@ -242,6 +257,26 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     }
 
     this.requestUpdate();
+  }
+
+  // TODO: this is really hacky. Find a better way to do this
+  private isTouchDevice(): boolean {
+    return (navigator as any)?.userAgentData?.mobile ?? false;
+  }
+
+  /**
+   * @description
+   * The default selection handler will infer the device type and
+   * the selection behavior will be set to "tablet", otherwise it will be set
+   * to "desktop"
+   */
+  private handleDefaultSelection(selectionEvent: SelectionEvent): void {
+    if (this.isTouchDevice()) {
+      this.handleTabletSelection(selectionEvent);
+      return;
+    }
+
+    this.handleDesktopSelection(selectionEvent);
   }
 
   /**
@@ -354,12 +389,12 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     const subSelection = gridTiles.filter((tile) => tile.selected);
     const hasSubSelection = subSelection.length > 0;
 
-    const selectedItems = hasSubSelection ? subSelection : gridTiles;
-    const selectedTiles = selectedItems.map((tile) => tile.model);
+    const selectedTiles = hasSubSelection ? subSelection : gridTiles;
+    const selectedItems = selectedTiles.map((tile) => tile.model);
     const value: Verification[] = [];
 
     for (const tag of tags) {
-      for (const tile of selectedTiles) {
+      for (const tile of selectedItems) {
         value.push(
           new Verification({
             ...tile,
@@ -374,16 +409,29 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     this.decisions.push(...value);
     this.dispatchEvent(new CustomEvent("decision-made", { detail: value }));
 
+    this.pageNext(selectedTiles, event.detail.color);
+  }
+
+  private async pageNext(selectedTiles: VerificationGridTile[], color: string): Promise<void> {
     this.removeSubSelection();
 
-    this.pagedItems += this.gridSize;
-    this.renderVirtualPage();
+    selectedTiles.forEach((tile: VerificationGridTile) => {
+      tile.color = color;
+    });
+
+    setTimeout(() => {
+      this.pagedItems += this.gridSize;
+      this.renderVirtualPage();
+
+      selectedTiles.forEach((tile: VerificationGridTile) => {
+        tile.color = "var(--oe-panel-color)";
+      });
+    }, 400);
   }
 
   private async renderVirtualPage(): Promise<void> {
     const elements = this.gridTiles;
 
-    //? HN asking AT: `!elements?.length` or `elements === undefined || elements.length === 0`
     if (elements === undefined || elements.length === 0) {
       throw new Error("Could not find instantiated spectrogram elements");
     }
@@ -459,8 +507,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     const pagesToClientCache = this.pagedItems + this.gridSize;
 
     const PagesToCacheServerSide = 10;
-    // prettier-ignore
-    const targetServerCacheHead = pagesToClientCache + (this.gridSize * PagesToCacheServerSide);
+    const targetServerCacheHead = pagesToClientCache + this.gridSize * PagesToCacheServerSide;
 
     this.cacheClient(pagesToClientCache);
     if (!this.serverCacheExhausted) {
@@ -628,18 +675,6 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     URL.revokeObjectURL(url);
   }
 
-  // TODO: narrow the typing here
-  private closeHelpDialog(): void {
-    const dialogPreference = this.shadowRoot!.getElementById("dialog-preference") as HTMLInputElement;
-    const shouldShowDialog = !dialogPreference.checked;
-
-    if (!shouldShowDialog) {
-      localStorage.setItem(helpPreferenceLocalStorageKey, "true");
-    } else {
-      localStorage.removeItem(helpPreferenceLocalStorageKey);
-    }
-  }
-
   private currentSubSelection(): Verification[] {
     const gridTiles = Array.from(this.gridTiles);
     return gridTiles.filter((tile) => tile.selected).map((tile) => tile.model);
@@ -675,96 +710,9 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     `;
   }
 
-  private keyboardShortcutTemplate(shortcuts: KeyboardShortcut[]): TemplateResult<1> {
-    return html`
-      <div class="keyboard-shortcuts">
-        ${shortcuts.map(
-          (shortcut) => html`<div class="row">
-            ${shortcut.key.split(" ").map((key) => html`<kbd class="key">${key}</kbd>`)}
-            <span class="description">${shortcut.description}</span>
-          </div>`,
-        )}
-      </div>
-    `;
-  }
-
-  private helpDialogTemplate(): TemplateResult<1> {
-    const selectionKeyboardShortcuts: KeyboardShortcut[] = [
-      { key: "Ctrl A", description: "Select all items" },
-      { key: "Shift Click", description: "Add a range of items to the sub-selection" },
-      { key: "Ctrl Click", description: "Toggle the selection of a single item" },
-      { key: "Ctrl Shift Click", description: "Select a range of items" },
-      { key: "Esc", description: "Deselect all items" },
-    ];
-
-    // decision shortcuts are fetched from the decision elements
-    // TODO: fix this
-    const decisionShortcuts: KeyboardShortcut[] = [
-      ...(this.decisionElements?.map((element) => {
-        return { key: element.shortcut, description: element.innerText };
-      }) ?? []),
-    ] as any;
-
-    // TODO: there are some hacks in here to handle closing the modal when the user clicks off
-    return html`
-      <dialog id="help-dialog" @click="${() => this.helpDialogElement.close()}" @close="${this.closeHelpDialog}">
-        <div class="dialog-container" @click="${(event: PointerEvent) => event.stopPropagation()}">
-          <h1>Information</h1>
-
-          <section>
-            <h2>Overview</h2>
-            <p>
-              The Verification grid is a tool to help you validate and verify audio events either generated by a machine
-              learning model or by a human annotator.
-            </p>
-          </section>
-
-          <div class="dialog-content">
-            <section>
-              <h2>Sub-Selection</h2>
-              <p>
-                You can apply a decision to only a few items in the grid by clicking on them, or using one of the
-                keyboard shortcuts below.
-              </p>
-
-              <p>
-                You can also use <kbd>Alt</kbd> + <kbd><i>a number</i></kbd> (e.g. <kbd>Alt</kbd> + <kbd>1</kbd>) to
-                select a tile using you keyboard. It is possible to see the possible keyboard shortcuts for selection by
-                holding down the <kbd>Alt</kbd> key.
-              </p>
-
-              <h3>Keyboard Shortcuts</h3>
-              ${this.keyboardShortcutTemplate(selectionKeyboardShortcuts)}
-            </section>
-
-            <section>
-              <h2>Decisions</h2>
-              ${this.keyboardShortcutTemplate(decisionShortcuts)}
-            </section>
-          </div>
-
-          <hr />
-
-          <form class="dialog-controls" method="dialog">
-            <label class="show-again">
-              <input
-                id="dialog-preference"
-                name="dialog-preference"
-                type="checkbox"
-                ?checked="${localStorage.getItem(helpPreferenceLocalStorageKey) !== null}"
-              />
-              Do not show this dialog again
-            </label>
-            <button class="oe-btn oe-btn-primary close-btn" type="submit" autofocus>Close</button>
-          </form>
-        </div>
-      </dialog>
-    `;
-  }
-
   public render() {
     return html`
-      ${this.helpDialogTemplate()}
+      <oe-verification-help-dialog></oe-verification-help-dialog>
 
       <div class="verification-container">
         <div
@@ -779,18 +727,25 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
         <div class="verification-controls">
           <span class="decision-controls-left">
-            <button @click="${() => this.helpDialogElement.showModal()}" class="oe-btn oe-btn-secondary">
+            <button @click="${() => this.helpDialog.showModal(false)}" class="oe-btn oe-btn-info">
               ${unsafeSVG(lucideCircleHelp)}
             </button>
+
             <button
-              class="oe-btn oe-btn-secondary ${classMap({ disabled: !this.canNavigatePrevious() })}"
+              class="oe-btn oe-btn-secondary ${classMap({
+                disabled: !this.canNavigatePrevious(),
+              })}"
               @click="${() => this.previousPage()}"
             >
               Previous
             </button>
           </span>
 
-          <span class="decision-controls ${classMap({ disabled: !this.canNavigateNext() })}">
+          <span
+            class="decision-controls ${classMap({
+              disabled: !this.canNavigateNext(),
+            })}"
+          >
             <h2 class="verification-controls-title">${this.decisionPrompt()}</h2>
             <div class="decision-control-actions">
               <slot @decision="${this.catchDecision}"></slot>
@@ -798,6 +753,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
           </span>
 
           <span class="decision-controls-right">
+            <slot name="data-source"></slot>
             <button @click="${this.downloadResults}" class="oe-btn oe-btn-secondary">Download Results</button>
           </span>
         </div>

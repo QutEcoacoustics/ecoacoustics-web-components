@@ -28,7 +28,7 @@ export class InfoCard extends AbstractComponent(LitElement) {
     const protocol = url.split(":/")[0];
     const pathFragment = url.split("/").at(-1)?.split("&")[0] ?? "";
     const hasAdditionalParameters = url.split("&").length > 1;
-    const formattedValue = `${protocol}...${pathFragment}${hasAdditionalParameters ? "..." : ""}`;
+    const formattedValue = `${protocol}…${pathFragment}${hasAdditionalParameters ? "…" : ""}`;
 
     return html`<a href="${url}" target="_blank">${formattedValue}</a>`;
   }

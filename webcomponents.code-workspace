@@ -48,9 +48,20 @@
       "webfft",
       "worklet",
       "lucide",
-      "roboto"
+      "roboto",
+      "colorbrewer",
+
+      // windowing functions
+      "tukey",
+      "lanczos",
+      "blackman",
+      "nuttall"
     ],
-    "cSpell.ignorePaths": ["**/node_modules/**", "**/dist/**", "webcomponents.code-workspace"],
+    "cSpell.ignorePaths": [
+      "**/node_modules/**",
+      "**/dist/**",
+      "webcomponents.code-workspace"
+    ],
     "markdownlint.config": {
       // disable no Inline HTML because we use inline HTML for the 11ty pages
       "MD033": false

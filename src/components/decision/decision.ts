@@ -22,7 +22,7 @@ import { booleanConverter } from "../../helpers/attributes";
 export class Decision extends AbstractComponent(LitElement) {
   public static styles = decisionStyles;
 
-  @property({ type: Boolean, reflect: true, converter: (x) => x !== "false" })
+  @property({ type: Boolean, reflect: true, converter: booleanConverter })
   public verified: boolean | undefined;
 
   @property({ type: String, reflect: true })
@@ -30,6 +30,9 @@ export class Decision extends AbstractComponent(LitElement) {
 
   @property({ type: String, reflect: true })
   public shortcut: string | undefined;
+
+  @property({ type: String })
+  public color = "var(--oe-primary-color)";
 
   @property({ attribute: "additional-tags", type: String, reflect: true })
   public additionalTags: string | undefined;
@@ -93,6 +96,7 @@ export class Decision extends AbstractComponent(LitElement) {
         detail: {
           value: this.verified,
           tag: this.tag,
+          color: this.color,
           additionalTags,
         },
         bubbles: true,
@@ -105,16 +109,11 @@ export class Decision extends AbstractComponent(LitElement) {
     const keyboardLegend =
       this.shortcut && this.selectionMode === "desktop" ? html`<kbd>${this.shortcut.toUpperCase()}</kbd>` : nothing;
 
-    // I use aria-disabled here because if the disabled state is caught by the
-    // emitDecision method
-    // however, if we set the disabled attribute on this element, when the user
-    // selects a decision, the button will lose focus (which is not what we want)
-    // therefore, to prevent this from happening, we catch the disabled state
-    // in the click handler and set aria-disabled to true
     return html`
       <button
         id="decision-button"
-        class="oe-btn oe-btn-secondary ${classMap({ disabled: !!this.disabled })}"
+        class="${classMap({ disabled: !!this.disabled })}"
+        style="--decision-color: ${this.color}"
         part="decision-button"
         title="Shortcut: ${this.shortcut}"
         aria-disabled="${this.disabled}"

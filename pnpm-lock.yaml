@@ -26,6 +26,9 @@ importers:
       chroma-js:
         specifier: ^2.4.2
         version: 2.4.2
+      colorbrewer:
+        specifier: ^1.5.6
+        version: 1.5.6
       csvtojson:
         specifier: ^2.0.10
         version: 2.0.10
@@ -63,6 +66,9 @@ importers:
       '@types/chroma-js':
         specifier: ^2.4.4
         version: 2.4.4
+      '@types/colorbrewer':
+        specifier: ^1.0.32
+        version: 1.0.32
       '@types/node':
         specifier: ^20.12.10
         version: 20.12.12
@@ -641,6 +647,9 @@ packages:
   '@types/chroma-js@2.4.4':
     resolution: {integrity: sha512-/DTccpHTaKomqussrn+ciEvfW4k6NAHzNzs/sts1TCqg333qNxOhy8TNIoQCmbGG3Tl8KdEhkGAssb1n3mTXiQ==}
 
+  '@types/colorbrewer@1.0.32':
+    resolution: {integrity: sha512-mIqwKFoEVzJHfqIfKnQCyw5HoF6+85Qd7CHT9TRtt9WnBwyAdRZmUPZoFJ7wajIWoPaKFY6BPeVp/38PpTBp5A==}
+
   '@types/estree@1.0.5':
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
 
@@ -977,6 +986,9 @@ packages:
 
   color-name@1.1.4:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
+
+  colorbrewer@1.5.6:
+    resolution: {integrity: sha512-fONg2pGXyID8zNgKHBlagW8sb/AMShGzj4rRJfz5biZ7iuHQZYquSCLE/Co1oSQFmt/vvwjyezJCejQl7FG/tg==}
 
   command-line-args@5.1.2:
     resolution: {integrity: sha512-fytTsbndLbl+pPWtS0CxLV3BEWw9wJayB8NnU2cbQqVPsNdYezQeT+uIQv009m+GShnMNyuoBrRo8DTmuTfSCA==}
@@ -2983,6 +2995,8 @@ snapshots:
 
   '@types/chroma-js@2.4.4': {}
 
+  '@types/colorbrewer@1.0.32': {}
+
   '@types/estree@1.0.5': {}
 
   '@types/node@20.12.12':
@@ -3395,6 +3409,8 @@ snapshots:
       color-name: 1.1.4
 
   color-name@1.1.4: {}
+
+  colorbrewer@1.5.6: {}
 
   command-line-args@5.1.2:
     dependencies:

@@ -17,63 +17,14 @@ export const verificationGridStyles = css`
     z-index: 5;
   }
 
-  #help-dialog {
-    h1 {
-      font-weight: 600;
-    }
-
-    h2,
-    h3 {
-      font-weight: 500;
-      margin-bottom: 0;
-    }
-
-    hr {
-      position: relative;
-      margin-top: 1em;
-      margin-bottom: 1.5em;
-    }
-
-    .dialog-container {
-      position: relative;
-      margin: 2rem;
-    }
-
-    .dialog-content {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      column-gap: 10%;
-    }
-
-    .dialog-controls {
-      display: block;
-      position: relative;
-
-      .close-btn {
-        display: block;
-        cursor: pointer;
-      }
-    }
-  }
-
   .keyboard-shortcuts {
     display: grid;
     position: relative;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: var(--oe-spacing);
     width: 100%;
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
-
-    .row {
-      width: 100%;
-      .key {
-      }
-
-      .description {
-        padding-left: 2rem;
-      }
-    }
   }
 
   .verification-container {
@@ -89,9 +40,8 @@ export const verificationGridStyles = css`
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
     align-items: stretch;
-    gap: 0.5rem;
+    gap: var(--oe-spacing);
   }
 
   .no-items-message {
@@ -111,9 +61,9 @@ export const verificationGridStyles = css`
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
-    align-items: center;
-    padding: 1rem;
-    gap: 1rem;
+    align-items: end;
+    padding: var(--oe-spacing);
+    gap: var(--oe-spacing);
     color: var(--oe-font-color);
   }
 
@@ -124,6 +74,10 @@ export const verificationGridStyles = css`
 
     .decision-control-actions {
       display: flex;
+
+      & > * {
+        display: block;
+      }
     }
   }
 

@@ -9,7 +9,7 @@ export const infoCardStyle = css`
     padding-top: 1rem;
     padding-bottom: 1rem;
     color: var(--oe-font-color);
-    background-color: var(--oe-info-color);
+    background-color: var(--oe-background-color);
     border-radius: var(--oe-border-rounding);
     font-size: var(--oe-font-size);
 
@@ -35,9 +35,5 @@ export const infoCardStyle = css`
   .static-actions {
     display: flex;
     justify-content: space-between;
-  }
-
-  .download-link {
-    padding-top: 1rem;
   }
 `;
