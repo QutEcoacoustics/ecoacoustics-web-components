@@ -1,35 +1,27 @@
 import { css } from "lit";
 
 export const mediaControlsStyles = css`
-  :host {
-    display: block;
-    width: 100%;
-  }
-
-  #action-button {
-    display: inline;
-    cursor: pointer;
-    color: black;
-    padding: 0.5rem;
-    margin-right: inherit;
-    box-shadow: none;
-  }
-
   .container {
     display: flex;
     position: relative;
     align-items: center;
+    justify-content: center;
     margin-top: var(--oe-spacing);
+    margin-bottom: var(--oe-spacing);
     color: var(--oe-font-color);
-    width: 100%;
+    width: fit-content;
     background-color: var(--oe-background-color);
     border-radius: var(--oe-border-rounding);
     box-shadow: var(--oe-box-shadow);
+    font-size: calc(var(--oe-font-size));
     overflow: hidden;
 
-    /* TODO: remove */
-    max-width: 350px;
+    > :hover {
+      background-color: var(--oe-panel-color);
+    }
 
-    font-size: calc(var(--oe-font-size));
+    > *:not(:last-child) {
+      border-right: 1px solid var(--oe-font-color-lighter);
+    }
   }
 `;

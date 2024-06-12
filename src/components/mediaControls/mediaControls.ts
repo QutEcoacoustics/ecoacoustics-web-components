@@ -114,7 +114,7 @@ export class MediaControls extends AbstractComponent(LitElement) {
   private additionalSettingsTemplate(): TemplateResult<1> {
     return html`
       <sl-dropdown title="Additional Settings" hoist>
-        <button slot="trigger">${unsafeSVG(lucideSettingsIcon)}</button>
+        <a slot="trigger">${unsafeSVG(lucideSettingsIcon)}</a>
         <sl-menu>
           ${this.selectSettingsTemplate("windowFunction", "Window Function", [
             "hann",
@@ -133,7 +133,39 @@ export class MediaControls extends AbstractComponent(LitElement) {
           ])}
           ${this.selectSettingsTemplate("windowSize", "Window Size", ["128", "256", "512", "1024", "2048"])}
           ${this.selectSettingsTemplate("melScale", "Scale", ["linear", "mel"])}
-        </sl-menu>
+
+          <sl-menu-item>
+            Axes
+            <sl-menu @sl-select="" slot="submenu">
+              <sl-menu-item>
+                <label>
+                  <input type="checkbox" name="" id="" />
+                  Show X-Axis Labels
+                </label>
+              </sl-menu-item>
+
+              <sl-menu-item>
+                <label>
+                  <input type="checkbox" name="" id="" />
+                  Show Y-Axis Labels
+                </label>
+              </sl-menu-item>
+
+              <sl-menu-item>
+                <label>
+                  <input type="checkbox" name="" id="" />
+                  Show X-Axis Grid Lines
+                </label>
+              </sl-menu-item>
+
+              <sl-menu-item>
+                <label>
+                  <input type="checkbox" name="" id="" />
+                  Show Y-Axis Grid Lines
+                </label>
+              </sl-menu-item>
+            </sl-menu>
+          </sl-menu-item>
       </sl-dropdown>
     `;
   }
@@ -171,7 +203,7 @@ export class MediaControls extends AbstractComponent(LitElement) {
 
     return html`
       <sl-dropdown title="Colour" hoist>
-        <button slot="trigger">${unsafeSVG(lucidePalletteIcon)}</button>
+        <a slot="trigger">${unsafeSVG(lucidePalletteIcon)}</a>
         <sl-menu @sl-select="${changeColorHandler}">
           <sl-menu-item value="grayscale">Grayscale</sl-menu-item>
           <sl-menu-item value="audacity">Audacity</sl-menu-item>
@@ -192,12 +224,12 @@ export class MediaControls extends AbstractComponent(LitElement) {
       </sl-dropdown>
 
       <sl-dropdown title="Brightness" hoist>
-        <button slot="trigger">${unsafeSVG(lucideSunIcon)}</button>
+        <a slot="trigger">${unsafeSVG(lucideSunIcon)}</a>
         <input @change="${changeBrightnessHandler}" type="number" step="0.1" placeholder="0" />
       </sl-dropdown>
 
       <sl-dropdown title="Contrast" hoist>
-        <button slot="trigger">${unsafeSVG(lucideContrastIcon)}</button>
+        <a slot="trigger">${unsafeSVG(lucideContrastIcon)}</a>
         <input @change="${changeContrastHandler}" type="number" step="0.1" placeholder="1" />
       </sl-dropdown>
 

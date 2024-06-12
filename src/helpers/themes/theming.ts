@@ -33,11 +33,25 @@ export const theming = css`
     --oe-selected-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) - 5%));
     --oe-panel-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) + 2%));
 
+    --oe-font-color-lighter: color-mix(in srgb, var(--oe-font-color) 10%, var(--oe-background-color));
     --oe-panel-color-lighter: color-mix(in srgb, var(--oe-panel-color) 1%, var(--oe-background-color));
   }
 
   * {
     font-family: var(--oe-font-family);
+  }
+
+  :has(> svg.lucide) {
+    padding: var(--oe-spacing);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* All icons should be the same size as the font */
+    svg.lucide {
+      width: calc(var(--oe-font-size) + var(--oe-spacing));
+      height: calc(var(--oe-font-size) + var(--oe-spacing));
+    }
   }
 
   button:disabled,
@@ -105,8 +119,7 @@ export const theming = css`
   hr {
     border: 0;
     height: 1px;
-    background-color: var(--oe-font-color);
-    opacity: 0.2;
+    background-color: var(--oe-font-color-lighter);
   }
 
   dialog {

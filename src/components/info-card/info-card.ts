@@ -94,11 +94,3 @@ export class InfoCard extends AbstractComponent(LitElement) {
     `;
   }
 }
-
-// use ISO8601 for date format
-// don't use comma for sample rate, use a half space
-// should use key-value pairs from object
-// and show a maximum of 4 items until there is a "show more" label
-// we don't expect this to be perfect, because it's really hard to know the underlying data structures
-// from a user provided csv/json file
-// we expect implementors to make their own component

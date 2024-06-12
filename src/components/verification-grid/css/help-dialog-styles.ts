@@ -22,6 +22,7 @@ export const helpDialogStyles = css`
       position: relative;
       width: fix-content;
       max-width: 60em;
+      padding: var(--oe-spacing);
     }
   }
 
@@ -33,8 +34,8 @@ export const helpDialogStyles = css`
     > * {
       flex: 1;
 
-      &:not(:last-child) {
-        border-right: 1px dotted var(--oe-font-color);
+      &:not(:first-child) {
+        border-left: 1px dotted var(--oe-font-color);
       }
     }
   }

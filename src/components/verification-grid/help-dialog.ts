@@ -3,6 +3,7 @@ import { AbstractComponent } from "../../mixins/abstractComponent";
 import { html, LitElement, nothing, TemplateResult } from "lit";
 import { Decision } from "../decision/decision";
 import { helpDialogStyles } from "./css/help-dialog-styles";
+import { SelectionObserverType } from "./verification-grid";
 
 interface KeyboardShortcut {
   key: string;
@@ -17,6 +18,9 @@ export class VerificationHelpDialog extends AbstractComponent(LitElement) {
 
   @property({ type: Array })
   public decisionElements!: Decision[];
+
+  @property({ type: String })
+  public selectionBehavior!: SelectionObserverType;
 
   @state()
   private showRememberOption = true;
@@ -56,7 +60,7 @@ export class VerificationHelpDialog extends AbstractComponent(LitElement) {
     return html`
       <div class="keyboard-shortcuts">
         ${shortcuts.map(
-          (shortcut) => html`<div class="row">
+          (shortcut) => html`<div>
             ${shortcut.key
               .split("+")
               .map((key, i, { length }) => html`<kbd class="key">${key}</kbd> ${i !== length - 1 ? "+" : nothing}`)}
@@ -99,24 +103,36 @@ export class VerificationHelpDialog extends AbstractComponent(LitElement) {
 
             <section>
               <h2>Decisions</h2>
-              ${this.keyboardShortcutTemplate(decisionShortcuts)}
+              <p>By creating a decision, you are adding a tag to an audio recording.</p>
+              <p>
+                If there is additional information that you want to add on top of the tag, you can use the additional
+                tags.
+              </p>
+
+              ${this.selectionBehavior !== "tablet"
+                ? html`
+                    <h3>Keyboard Shortcuts</h3>
+                    ${this.keyboardShortcutTemplate(decisionShortcuts)}
+                  `
+                : nothing}
             </section>
 
             <section>
               <h2>Sub-Selection</h2>
-              <p>
-                You can apply a decision to only a few items in the grid by clicking on them, or using one of the
-                keyboard shortcuts below.
-              </p>
+              <p>You can apply a decision to only a few items in the grid by clicking on them.</p>
 
-              <p>
-                You can also use <kbd>Alt</kbd> + <math>a number</math> (e.g. <kbd>Alt</kbd> + <kbd>1</kbd>) to select a
-                tile using you keyboard. It is possible to see the possible keyboard shortcuts for selection by holding
-                down the <kbd>Alt</kbd> key.
-              </p>
+              ${this.selectionBehavior !== "tablet"
+                ? html`
+                    <h3>Keyboard Shortcuts</h3>
+                    <p>
+                      You can also use <kbd>Alt</kbd> + <math>a number</math> (e.g. <kbd>Alt</kbd> + <kbd>1</kbd>) to
+                      select a tile using you keyboard. It is possible to see the possible keyboard shortcuts for
+                      selection by holding down the <kbd>Alt</kbd> key.
+                    </p>
 
-              <h3>Keyboard Shortcuts</h3>
-              ${this.keyboardShortcutTemplate(selectionKeyboardShortcuts)}
+                    ${this.keyboardShortcutTemplate(selectionKeyboardShortcuts)}
+                  `
+                : nothing}
             </section>
           </div>
 

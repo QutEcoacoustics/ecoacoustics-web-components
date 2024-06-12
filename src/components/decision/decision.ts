@@ -107,7 +107,7 @@ export class Decision extends AbstractComponent(LitElement) {
   public render() {
     const additionalTagsTemplate = this.additionalTags ? html`(${this.additionalTags})` : nothing;
     const keyboardLegend =
-      this.shortcut && this.selectionMode === "desktop" ? html`<kbd>${this.shortcut.toUpperCase()}</kbd>` : nothing;
+      this.shortcut && this.selectionMode !== "tablet" ? html`<kbd>${this.shortcut.toUpperCase()}</kbd>` : nothing;
 
     return html`
       <button
@@ -121,7 +121,7 @@ export class Decision extends AbstractComponent(LitElement) {
       >
         <div class="tag-text"><slot></slot></div>
         <div class="additional-tags">${additionalTagsTemplate}</div>
-        <div class="keyboard-legend">${keyboardLegend}</div>
+        ${this.selectionMode !== "tablet" ? html`<div class="keyboard-legend">${keyboardLegend}</div>` : nothing}
       </button>
     `;
   }

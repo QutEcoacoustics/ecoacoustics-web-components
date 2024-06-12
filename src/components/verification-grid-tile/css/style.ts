@@ -10,7 +10,8 @@ export const verificationGridTileStyles = css`
     box-shadow: 4px 4px 8px var(--oe-panel-color);
     padding: var(--oe-spacing);
     cursor: pointer;
-    margin: calc(0.5rem + 1px);
+    margin: calc(var(--oe-spacing) + 1px);
+    max-width: 350px;
 
     border: 4px solid var(--decision-color);
 
@@ -44,5 +45,23 @@ export const verificationGridTileStyles = css`
 
     background-color: var(--oe-panel-color);
     border-radius: var(--oe-border-rounding);
+  }
+
+  ::slotted(oe-media-controls) {
+    display: flex;
+    justify-content: center;
+  }
+
+  @media (max-width: 600px) {
+    .tile-container {
+      width: 100%;
+      max-width: 93vw;
+      margin: 0;
+    }
+
+    ::slotted(oe-spectrogram, oe-axes, oe-indicator) {
+      position: relative;
+      height: 460px;
+    }
   }
 `;

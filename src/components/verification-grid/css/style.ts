@@ -74,15 +74,27 @@ export const verificationGridStyles = css`
 
     .decision-control-actions {
       display: flex;
-
-      & > * {
-        display: block;
-      }
+      flex-wrap: wrap;
+      justify-content: center;
     }
   }
 
   .decision-controls-left,
   .decision-controls-right {
     display: flex;
+  }
+
+  /*
+    We apply styles to the <template> elements here because we can access them
+    through light dom selectors.
+    We cannot target the template elements inside the verification-grid-tile
+    because they are reflected into the shadow dom, but not actually rendered
+    in the tile dom (meaning that we can't style them in the tile component).
+  */
+  oe-spectrogram {
+    @media (max-width: 600px) {
+      /* TODO: do this better. This is a hacky solution for now */
+      height: 380px;
+    }
   }
 `;

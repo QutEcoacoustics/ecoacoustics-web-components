@@ -30,6 +30,10 @@ type DecisionEvent = CustomEvent<{
   color: string;
 }>;
 
+type StoredDecision = Verification & {
+  pageIndex: number;
+};
+
 /**
  * A verification grid component that can be used to validate and verify audio events
  *
@@ -90,7 +94,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   @state()
   public loading = false;
 
-  public decisions: Verification[] = [];
+  public decisions: StoredDecision[] = [];
   public dataSource: DataSource | undefined;
   private spectrogramsLoaded = 0;
   private hiddenTiles = 0;
@@ -148,6 +152,8 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
       this.decisionElements.forEach((element: Decision) => {
         element.selectionMode = selectionBehavior;
       });
+
+      this.helpDialog.selectionBehavior = selectionBehavior;
     }
 
     const colors = colorBrewer.Dark2[8];
@@ -175,6 +181,10 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
     if (reRenderKeys.some((key) => change.has(key))) {
       this.createSpectrogramElements();
+    }
+
+    if (change.has("pagedItems")) {
+      this.handlePagination();
     }
   }
 
@@ -229,7 +239,12 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   private handleIntersection(entries: IntersectionObserverEntry[]): void {
     for (const entry of entries) {
       if (entry.intersectionRatio < 1) {
-        // this.hideGridItems(this.hiddenTiles + 1);
+        // at the very minimum, we always want one grid tile showing
+        // even if this will cause some items to go off the screen
+        const newProposedHiddenTiles = this.hiddenTiles + 1;
+        if (newProposedHiddenTiles < this.gridSize) {
+          this.hideGridItems(newProposedHiddenTiles);
+        }
       }
     }
   }
@@ -261,7 +276,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
   // TODO: this is really hacky. Find a better way to do this
   private isTouchDevice(): boolean {
-    return (navigator as any)?.userAgentData?.mobile ?? false;
+    return "ontouchstart" in window || navigator.maxTouchPoints > 0;
   }
 
   /**
@@ -391,19 +406,20 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
     const selectedTiles = hasSubSelection ? subSelection : gridTiles;
     const selectedItems = selectedTiles.map((tile) => tile.model);
-    const value: Verification[] = [];
+    const value: StoredDecision[] = [];
 
     for (const tag of tags) {
-      for (const tile of selectedItems) {
-        value.push(
-          new Verification({
+      selectedItems.forEach((tile: Verification, i: number) => {
+        value.push({
+          ...new Verification({
             ...tile,
             tag: { id: undefined, text: tag },
             confirmed: decision,
             additionalTags: additionalTags ?? [],
           }),
-        );
-      }
+          pageIndex: this.pagedItems + i,
+        });
+      });
     }
 
     this.decisions.push(...value);
@@ -414,19 +430,43 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
   private async pageNext(selectedTiles: VerificationGridTile[], color: string): Promise<void> {
     this.removeSubSelection();
-
-    selectedTiles.forEach((tile: VerificationGridTile) => {
-      tile.color = color;
-    });
+    this.createDecisionHighlight(selectedTiles, color);
 
     setTimeout(() => {
       this.pagedItems += this.gridSize;
       this.renderVirtualPage();
 
-      selectedTiles.forEach((tile: VerificationGridTile) => {
-        tile.color = "var(--oe-panel-color)";
-      });
+      this.removeDecisionHighlight(selectedTiles);
     }, 400);
+  }
+
+  private handlePagination(): void {
+    const hasCreatedDecision = this.decisions.length >= this.pagedItems;
+    if (!hasCreatedDecision) {
+      return;
+    }
+
+    const decisionItems = this.decisions.slice(this.decisions.length - this.gridSize, this.decisions.length);
+
+    const subSelection: VerificationGridTile[] = [];
+    decisionItems.forEach((decision: StoredDecision) => {
+      const tile = this.gridTiles[decision.pageIndex - this.pagedItems];
+      subSelection.push(tile);
+    });
+
+    this.createDecisionHighlight(subSelection, "#ff0000");
+  }
+
+  private createDecisionHighlight(selectedTiles: VerificationGridTile[], color: string): void {
+    selectedTiles.forEach((tile: VerificationGridTile) => {
+      tile.color = color;
+    });
+  }
+
+  private removeDecisionHighlight(selectedTiles: VerificationGridTile[]): void {
+    selectedTiles.forEach((tile: VerificationGridTile) => {
+      tile.color = "var(--oe-panel-color)";
+    });
   }
 
   private async renderVirtualPage(): Promise<void> {
