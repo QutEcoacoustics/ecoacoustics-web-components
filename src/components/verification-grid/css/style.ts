@@ -27,6 +27,14 @@ export const verificationGridStyles = css`
     margin-bottom: 0.5rem;
   }
 
+  /* TODO: fix placement */
+  .statistics-section {
+    position: absolute;
+    display: inline-block;
+    width: fit-content;
+    padding: var(--oe-spacing);
+  }
+
   .verification-container {
     background-color: var(--oe-background-color);
     height: 100%;

@@ -84,7 +84,10 @@ export class VerificationHelpDialog extends AbstractComponent(LitElement) {
     // TODO: fix this
     const decisionShortcuts: KeyboardShortcut[] = [
       ...(this.decisionElements?.map((element) => {
-        return { key: element.shortcut, description: element.innerText };
+        return {
+          key: element.shortcut,
+          description: `${element.innerText} ${element.additionalTags ? `(${element.additionalTags})` : ""}`,
+        };
       }) ?? []),
     ] as any;
 
@@ -103,11 +106,7 @@ export class VerificationHelpDialog extends AbstractComponent(LitElement) {
 
             <section>
               <h2>Decisions</h2>
-              <p>By creating a decision, you are adding a tag to an audio recording.</p>
-              <p>
-                If there is additional information that you want to add on top of the tag, you can use the additional
-                tags.
-              </p>
+              <p>Review the samples, press the button that makes the most sense</p>
 
               ${this.selectionBehavior !== "tablet"
                 ? html`

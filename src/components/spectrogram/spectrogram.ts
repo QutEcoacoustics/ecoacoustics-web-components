@@ -244,6 +244,9 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
     });
   }
 
+  // TODO: finish this method
+  public resetSettings(): void {}
+
   public play(): void {
     this.paused = false;
     this.setPlaying();

@@ -11,9 +11,9 @@ export const theming = css`
     --oe-theme-lightness: 54%;
 
     /* A2O Colours */
-    /* --oe-theme-hue: 142deg;
+    --oe-theme-hue: 142deg;
     --oe-theme-saturation: 25%;
-    --oe-theme-lightness: 35%; */
+    --oe-theme-lightness: 35%;
 
     /* Ecosounds Colours */
     /* --oe-theme-hue: 207;
@@ -29,10 +29,13 @@ export const theming = css`
 
     --oe-border-rounding: 6px;
     --oe-border-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) - 10%));
+    --oe-border-width: 2px;
+
     --oe-box-shadow: 1px 1px 1px currentcolor;
     --oe-font-family: "Roboto", sans-serif;
     --oe-font-size: 11px;
 
+    --oe-animation-time: 0.3s;
     --oe-spacing: 0.6em;
 
     --oe-primary-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), var(--oe-theme-lightness));
@@ -57,6 +60,9 @@ export const theming = css`
 
   * {
     font-family: var(--oe-font-family);
+
+    /* CSS Resets */
+    font-weight: normal;
   }
 
   :has(> svg.lucide) {
@@ -143,7 +149,7 @@ export const theming = css`
   dialog {
     position: relative;
     box-shadow: var(--oe-box-shadow);
-    border: 2px solid var(--oe-selected-color);
+    border: var(--oe-border-width) solid var(--oe-selected-color);
     min-width: 70%;
     max-width: 80%;
     max-height: 100%;
@@ -203,6 +209,21 @@ export const theming = css`
     appearance: textfield;
   }
 
+  input[type="range"] {
+    padding: 0;
+
+    /* &::-webkit-slider-thumb,
+    &::-moz-range-thumb {
+      background: var(--oe-primary-color);
+      border-radius: var(--oe-border-rounding);
+    }
+
+    &::-webkit-slider-runnable-track,
+    &::-moz-range-track {
+      background-color: var(--oe-panel-color);
+    } */
+  }
+
   input[type="checkbox"],
   input[type="radio"] {
     position: relative;
@@ -211,11 +232,10 @@ export const theming = css`
     height: 1.2rem;
   }
 
-  label:has(> input[type="checkbox"], > input[type="radio"]) {
+  label:has(> input) {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding-bottom: 0.5rem;
+    gap: var(--oe-spacing);
   }
 
   input[type="file"] {
@@ -249,7 +269,7 @@ export const theming = css`
     max-width: max-content;
     padding: var(--oe-spacing);
     background-color: var(--background-color);
-    transition: background 0.3s;
+    transition: background var(--oe-animation-time), border var(--oe-animation-time);
 
     /*
       Box shadows make a button look raised and clickable.
@@ -270,6 +290,16 @@ export const theming = css`
       background-size: 100%;
       transition: background 0s;
     }
+
+    /*
+      User agents create an outline around an element that has explicit focus
+      (focus set through .focus)
+      However, this is not the behavior that we want. Therefore, we use a CSS
+      reset to disable this behavior
+    */
+    &:focus {
+      outline: none;
+    }
   }
 
   .hidden {
@@ -284,17 +314,17 @@ export const theming = css`
 
   .oe-btn-primary {
     --background-color: var(--oe-background-color);
-    border: 2px solid var(--oe-primary-color);
+    border: var(--oe-border-width) solid var(--oe-primary-color);
   }
 
   .oe-btn-secondary {
     --background-color: var(--oe-background-color);
-    border: 2px solid var(--oe-secondary-color);
+    border: var(--oe-border-width) solid var(--oe-secondary-color);
     /* --background-color: var(--oe-secondary-color); */
   }
 
   .oe-btn-info {
-    --border: 2px solid var(--oe-info-color);
+    --border: var(--oe-border-width) solid var(--oe-info-color);
   }
 
   .oe-btn-danger {

@@ -1,3 +1,7 @@
+// we import the polyfills first so that they are available when the components
+// are imported
+import "../polyfills/polyfills";
+
 // oe web components barrel file
 export * from "./mediaControls/mediaControls";
 export * from "./spectrogram/spectrogram";

@@ -60,7 +60,7 @@ export class VerificationGridTile extends AbstractComponent(LitElement) {
   public showKeyboardShortcuts = false;
 
   @queryDeeplyAssignedElement({ selector: "oe-spectrogram" })
-  private spectrogram: Spectrogram | undefined;
+  public spectrogram: Spectrogram | undefined;
 
   private shortcuts: string[] = [];
   private shortcutHandler = this.handleKeyDown.bind(this);
@@ -75,10 +75,9 @@ export class VerificationGridTile extends AbstractComponent(LitElement) {
     super.disconnectedCallback();
   }
 
-  protected willUpdate(): void {
+  public willUpdate(): void {
     if (this.spectrogram && this.model?.url) {
       this.spectrogram.src = this.model.url;
-      console.log("setting to", this.model.url);
     }
 
     const shortcutKey = shortcutOrder[this.index];

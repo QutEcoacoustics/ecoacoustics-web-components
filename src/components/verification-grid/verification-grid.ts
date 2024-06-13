@@ -1,6 +1,6 @@
 import { customElement, property, query, queryAll, state } from "lit/decorators.js";
 import { AbstractComponent } from "../../mixins/abstractComponent";
-import { html, LitElement, PropertyValueMap, TemplateResult } from "lit";
+import { html, LitElement, nothing, PropertyValueMap, TemplateResult } from "lit";
 import { verificationGridStyles } from "./css/style";
 import { Spectrogram } from "../spectrogram/spectrogram";
 import { queryAllDeeplyAssignedElements, queryDeeplyAssignedElement } from "../../helpers/decorators";
@@ -15,6 +15,8 @@ import { DataSource } from "../../../playwright";
 import { classMap } from "lit/directives/class-map.js";
 import { VerificationHelpDialog } from "./help-dialog";
 import colorBrewer from "colorbrewer";
+import { booleanConverter } from "../../helpers/attributes";
+import { sleep } from "../../helpers/utilities";
 
 export type SelectionObserverType = "desktop" | "tablet" | "default";
 export type PageFetcher = (elapsedItems: number) => Promise<any[]>;
@@ -29,10 +31,6 @@ type DecisionEvent = CustomEvent<{
   additionalTags: string[];
   color: string;
 }>;
-
-type StoredDecision = Verification & {
-  pageIndex: number;
-};
 
 /**
  * A verification grid component that can be used to validate and verify audio events
@@ -73,6 +71,9 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   @property({ type: String })
   public audioKey!: string;
 
+  @property({ attribute: "auto-page", type: Boolean, converter: booleanConverter })
+  public autoPage = true;
+
   @property({ attribute: "get-page", type: String })
   public getPage!: PageFetcher;
 
@@ -94,7 +95,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   @state()
   public loading = false;
 
-  public decisions: StoredDecision[] = [];
+  public decisions: Verification[] = [];
   public dataSource: DataSource | undefined;
   private spectrogramsLoaded = 0;
   private hiddenTiles = 0;
@@ -214,8 +215,17 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     }
   }
 
+  // some keys add additional information to the screen
+  // e.g. pressing Alt will show the selection keyboard shortcuts
+  //
+  // however, the alt key can also be used to switch virtual desktops in Windows
+  // because of this, if the user switches virtual desktops, we never receive
+  // the keyup event that is usually used to hide the additional information
+  // therefore, we listen for the window blur event so that when the window
+  // loses focus, we hide the additional information
   private handleWindowBlur(): void {
     this.hideSelectionShortcuts();
+    this.removeDecisionButtonHighlight();
   }
 
   private showSelectionShortcuts(): void {
@@ -274,9 +284,17 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     this.requestUpdate();
   }
 
-  // TODO: this is really hacky. Find a better way to do this
+  /** @returns - True if the device is a touch device */
   private isTouchDevice(): boolean {
-    return "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    // userAgentData is not shipped on all browsers. However, since we have
+    // polyfilled the userAgentData object, this condition should always be true
+    if (navigator.userAgentData) {
+      return navigator.userAgentData.mobile;
+    }
+
+    // if this error is being thrown, the userAgentData polyfills are not
+    // being applied
+    throw new Error("Could not determine if the device is a touch device");
   }
 
   /**
@@ -392,7 +410,16 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     this.renderVirtualPage();
   }
 
-  private catchDecision(event: DecisionEvent) {
+  private nextPage(): void {
+    this.removeSubSelection();
+    this.removeDecisionHighlight();
+    this.resetSpectrogramSettings();
+
+    this.pagedItems += this.gridSize;
+    this.renderVirtualPage();
+  }
+
+  private async catchDecision(event: DecisionEvent) {
     const decision: boolean = event.detail.value;
     const tags: any[] =
       event.detail.tag === "*"
@@ -406,38 +433,28 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
     const selectedTiles = hasSubSelection ? subSelection : gridTiles;
     const selectedItems = selectedTiles.map((tile) => tile.model);
-    const value: StoredDecision[] = [];
+    const value: Verification[] = [];
 
     for (const tag of tags) {
-      selectedItems.forEach((tile: Verification, i: number) => {
-        value.push({
-          ...new Verification({
+      for (const tile of selectedItems) {
+        value.push(
+          new Verification({
             ...tile,
             tag: { id: undefined, text: tag },
             confirmed: decision,
             additionalTags: additionalTags ?? [],
           }),
-          pageIndex: this.pagedItems + i,
-        });
-      });
+        );
+      }
     }
 
     this.decisions.push(...value);
     this.dispatchEvent(new CustomEvent("decision-made", { detail: value }));
 
-    this.pageNext(selectedTiles, event.detail.color);
-  }
-
-  private async pageNext(selectedTiles: VerificationGridTile[], color: string): Promise<void> {
-    this.removeSubSelection();
-    this.createDecisionHighlight(selectedTiles, color);
-
-    setTimeout(() => {
-      this.pagedItems += this.gridSize;
-      this.renderVirtualPage();
-
-      this.removeDecisionHighlight(selectedTiles);
-    }, 400);
+    await this.createDecisionHighlight(selectedTiles, event.detail.color);
+    if (this.autoPage) {
+      this.nextPage();
+    }
   }
 
   private handlePagination(): void {
@@ -446,27 +463,47 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
       return;
     }
 
-    const decisionItems = this.decisions.slice(this.decisions.length - this.gridSize, this.decisions.length);
-
-    const subSelection: VerificationGridTile[] = [];
-    decisionItems.forEach((decision: StoredDecision) => {
-      const tile = this.gridTiles[decision.pageIndex - this.pagedItems];
-      subSelection.push(tile);
-    });
-
-    this.createDecisionHighlight(subSelection, "#ff0000");
+    // const decisionItems = this.decisions.slice(this.decisions.length - this.gridSize, this.decisions.length);
   }
 
-  private createDecisionHighlight(selectedTiles: VerificationGridTile[], color: string): void {
+  private async createDecisionHighlight(selectedTiles: VerificationGridTile[], color: string): Promise<void> {
+    this.showDecisionButtonHighlight();
+
     selectedTiles.forEach((tile: VerificationGridTile) => {
       tile.color = color;
     });
+
+    // TODO: This should be moved to a different spot
+    if (this.autoPage) {
+      await sleep(400);
+      this.removeDecisionHighlight(selectedTiles);
+    }
   }
 
-  private removeDecisionHighlight(selectedTiles: VerificationGridTile[]): void {
+  private removeDecisionHighlight(selectedTiles: VerificationGridTile[] = Array.from(this.gridTiles)): void {
     selectedTiles.forEach((tile: VerificationGridTile) => {
       tile.color = "var(--oe-panel-color)";
     });
+
+    this.removeDecisionButtonHighlight();
+  }
+
+  private showDecisionButtonHighlight(): void {
+    for (const decision of this.decisionElements) {
+      decision.showDecisionColor = true;
+    }
+  }
+
+  private removeDecisionButtonHighlight(): void {
+    for (const decision of this.decisionElements) {
+      decision.showDecisionColor = false;
+    }
+  }
+
+  private resetSpectrogramSettings(): void {
+    for (const tile of this.gridTiles) {
+      tile.spectrogram?.resetSettings();
+    }
   }
 
   private async renderVirtualPage(): Promise<void> {
@@ -507,7 +544,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     const elementsToHide = Array.from(this.gridTiles).slice(-numberOfTiles);
 
     elementsToHide.forEach((element) => {
-      // element.style.display = "none";
+      element.style.display = "none";
     });
 
     this.hiddenTiles = numberOfTiles;
@@ -680,11 +717,13 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     element.style.display = "none";
   }
 
+  private canDownloadResults(): boolean {
+    return this.decisions.length > 0;
+  }
+
   // TODO: clean up this function
   // TODO: there is a "null" in additional tags (if none)
   private downloadResults(): void {
-    console.log("datasource", this.dataSource);
-
     let formattedResults = "";
     const fileFormat = this.dataSource?.fileType ?? "json";
     const results = this.decisions.map((decision: Verification) => {
@@ -739,6 +778,15 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     ></div>`;
   }
 
+  private statisticsTemplate(): TemplateResult<1> {
+    return html`
+      <div class="statistics-section">
+        <h2>Statistics</h2>
+        <p><span>Validated Items</span>: ${this.pagedItems}</p>
+      </div>
+    `;
+  }
+
   private noItemsTemplate(): TemplateResult<1> {
     return html`
       <div class="no-items-message">
@@ -755,6 +803,8 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
       <oe-verification-help-dialog></oe-verification-help-dialog>
 
       <div class="verification-container">
+        ${this.statisticsTemplate()}
+
         <div
           @selected="${this.selectionHandler}"
           @pointerdown="${this.renderHighlightBox}"
@@ -777,8 +827,21 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
               })}"
               @click="${() => this.previousPage()}"
             >
-              Previous
+              Previous Page
             </button>
+
+            ${this.autoPage
+              ? nothing
+              : html`
+                  <button
+                    class="oe-btn oe-btn-secondary ${classMap({
+                      disabled: !this.canNavigateNext(),
+                    })}"
+                    @click="${() => this.nextPage()}"
+                  >
+                    Next Page
+                  </button>
+                `}
           </span>
 
           <span
@@ -794,7 +857,12 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
           <span class="decision-controls-right">
             <slot name="data-source"></slot>
-            <button @click="${this.downloadResults}" class="oe-btn oe-btn-secondary">Download Results</button>
+            <button
+              @click="${this.downloadResults}"
+              class="oe-btn oe-btn-secondary ${classMap({ disabled: !this.canDownloadResults() })}"
+            >
+              Download Results
+            </button>
           </span>
         </div>
       </div>

@@ -16,6 +16,26 @@ import lucideSunIcon from "lucide-static/icons/sun.svg?raw";
 import lucideContrastIcon from "lucide-static/icons/contrast.svg?raw";
 
 /**
+ * Specifies where you should be able to find a preference setting in the media
+ * controls that can change the spectrogram settings.
+ *
+ * @example
+ * To move the spectrogram color preferences to the overflow menu:
+ * ```html
+ * <oe-media-controls color-preference="overflow"></oe-media-controls>
+ * ```
+ *
+ * @value default - Uses sane defaults for the preference positions
+ * @value toolbar - The preference can be changed directly from the toolbar
+ *                  Warning: If the preference is not shown in the toolbar by
+ *                  default it is because the icon is not very intuitive.
+ *                  If you want to change, the icon use the template slots
+ * @value overflow - The preference can be changed through the overflow (cog icon) menu
+ * @value hidden - The preference cannot be changed through the media controls
+ */
+type PreferenceLocation = "default" | "toolbar" | "overflow" | "hidden";
+
+/**
  * A simple media player with play/pause and seek functionality that can be used with the open ecoacoustics spectrograms and components.
  *
  * @property for - The id of the audio element to control
@@ -32,6 +52,9 @@ export class MediaControls extends AbstractComponent(LitElement) {
 
   @property({ type: String })
   public for = "";
+
+  @property({ type: String })
+  public playIconPosition: PreferenceLocation = "default";
 
   @provide({ context: rootContext })
   public logger: ILogger = {
@@ -139,6 +162,7 @@ export class MediaControls extends AbstractComponent(LitElement) {
             "flat_top",
           ])}
           ${this.selectSettingsTemplate("windowSize", "Window Size", ["128", "256", "512", "1024", "2048"])}
+          ${this.selectSettingsTemplate("windowOverlap", "Window Overlap", ["128", "256", "512", "1024"])}
           ${this.selectSettingsTemplate("melScale", "Scale", ["linear", "mel"])}
 
           <sl-menu-item>
@@ -194,7 +218,7 @@ export class MediaControls extends AbstractComponent(LitElement) {
       const oldOptions = this.spectrogramElement!.spectrogramOptions;
       this.spectrogramElement!.spectrogramOptions = {
         ...oldOptions,
-        brightness: newValue,
+        brightness: Number(newValue),
       } as any;
     };
 
@@ -204,7 +228,7 @@ export class MediaControls extends AbstractComponent(LitElement) {
       const oldOptions = this.spectrogramElement!.spectrogramOptions;
       this.spectrogramElement!.spectrogramOptions = {
         ...oldOptions,
-        contrast: newValue,
+        contrast: Number(newValue),
       } as any;
     };
 
@@ -232,12 +256,18 @@ export class MediaControls extends AbstractComponent(LitElement) {
 
       <sl-dropdown title="Brightness" hoist>
         <a slot="trigger">${unsafeSVG(lucideSunIcon)}</a>
-        <input @change="${changeBrightnessHandler}" type="number" step="0.1" placeholder="0" />
+        <label>
+          <input @change="${changeBrightnessHandler}" type="range" min="-0.5" max="0.5" step="0.1" value="0" />
+          <input @change="${changeBrightnessHandler}" size="1" type="number" min="0" max="2" step="0.1" value="1" />
+        </label>
       </sl-dropdown>
 
       <sl-dropdown title="Contrast" hoist>
         <a slot="trigger">${unsafeSVG(lucideContrastIcon)}</a>
-        <input @change="${changeContrastHandler}" type="number" step="0.1" placeholder="1" />
+        <label>
+          <input @change="${changeContrastHandler}" type="range" min="0" max="2" step="0.1" value="1" />
+          <input @change="${changeContrastHandler}" size="1" type="number" min="0" max="2" step="0.1" value="1" />
+        </label>
       </sl-dropdown>
 
       ${this.additionalSettingsTemplate()}

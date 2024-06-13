@@ -34,6 +34,9 @@ export class Decision extends AbstractComponent(LitElement) {
   @property({ type: String })
   public color = "var(--oe-primary-color)";
 
+  @property({ type: Boolean })
+  public showDecisionColor = false;
+
   @property({ attribute: "additional-tags", type: String, reflect: true })
   public additionalTags: string | undefined;
 
@@ -52,26 +55,47 @@ export class Decision extends AbstractComponent(LitElement) {
   @state()
   public selectionMode: SelectionObserverType = "desktop";
 
-  private shortcutHandler = this.handleKeyDown.bind(this);
+  private keyUpHandler = this.shortcutHandler.bind(this);
+  private keyDownHandler = this.handleKeyDown.bind(this);
 
   public connectedCallback(): void {
     super.connectedCallback();
-    document.addEventListener("keyup", this.shortcutHandler);
+    document.addEventListener("keydown", this.keyDownHandler);
+    document.addEventListener("keyup", this.keyUpHandler);
   }
 
   public disconnectedCallback(): void {
-    document.removeEventListener("keyup", this.shortcutHandler);
+    document.removeEventListener("keydown", this.keyDownHandler);
+    document.removeEventListener("keyup", this.keyUpHandler);
     super.disconnectedCallback();
   }
 
-  private handleKeyDown(event: KeyboardEvent): void {
+  private shortcutHandler(event: KeyboardEvent): void {
+    this.showDecisionColor = false;
     if (this.shortcut === undefined) {
+      return;
+    }
+
+    // if the user is holding down escape while pressing a shortcut, we should
+    // not trigger the decision
+    // this can happen because we are listening to the keyup event
+    // meaning that the user can hold down the trigger key, decide against it
+    // and then release the trigger key while holding down the escape key
+    // to cancel creating the decision
+    if (event.key.toLocaleLowerCase() === "escape") {
+      // TODO: I haven't implemented this functionality, but since it is a composite
+      // keypress, we might have to create another event listener for this in the
+      // keydown event
       return;
     }
 
     if (event.key.toLocaleLowerCase() === this.shortcut.toLocaleLowerCase()) {
       this.emitDecision();
     }
+  }
+
+  private handleKeyDown(): void {
+    this.showDecisionColor = true;
   }
 
   private emitDecision(): void {
@@ -112,7 +136,11 @@ export class Decision extends AbstractComponent(LitElement) {
     return html`
       <button
         id="decision-button"
-        class="oe-btn-primary ${classMap({ disabled: !!this.disabled })}"
+        class="
+          oe-btn-primary
+          ${classMap({ disabled: !!this.disabled, "show-decision-color": this.showDecisionColor })}
+        "
+        style="--decision-color: ${this.color}"
         part="decision-button"
         title="Shortcut: ${this.shortcut}"
         aria-disabled="${this.disabled}"

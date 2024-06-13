@@ -14,8 +14,14 @@ export const verificationGridTileStyles = css`
     box-shadow: 4px 4px 8px var(--oe-panel-color);
     padding: var(--oe-spacing);
     cursor: pointer;
-    margin: calc(var(--oe-spacing));
-    max-width: 350px;
+    margin: var(--oe-spacing);
+    margin-bottom: 0;
+
+    /*
+      TODO: find out why we don't need this.
+      I think we do need something like this
+    */
+    /* max-width: 350px; */
 
     border: var(--selected-border-size) solid var(--decision-color);
 
@@ -24,8 +30,8 @@ export const verificationGridTileStyles = css`
     }
   }
 
+  /* TODO: maybe add a border here */
   .selected {
-    border: var(--selected-border-size) solid var(--oe-accent-color);
     background-color: var(--oe-selected-color);
   }
 
