@@ -38,7 +38,7 @@ export class MediaControls extends AbstractComponent(LitElement) {
     log: console.log,
   };
 
-  private spectrogramElement?: Spectrogram | null;
+  private spectrogramElement: Spectrogram | null | undefined;
   private playHandler = this.handleUpdatePlaying.bind(this);
 
   public disconnectedCallback(): void {
@@ -92,7 +92,14 @@ export class MediaControls extends AbstractComponent(LitElement) {
 
   private selectSettingsTemplate(key: keyof SpectrogramOptions, text: any, values: string[]): TemplateResult<1> {
     const changeHandler = (event: CustomEvent<{ item: SlMenuItem }>) => {
-      const newValue = event.detail.item.value;
+      // TODO: remove this after demo
+      let newValue: string | number | boolean = ["windowSize", "windowOverlap"].includes(key)
+        ? Number(event.detail.item.value)
+        : event.detail.item.value;
+
+      if (key === "melScale") {
+        newValue = newValue === "mel";
+      }
 
       const oldOptions = this.spectrogramElement!.spectrogramOptions;
       this.spectrogramElement!.spectrogramOptions = {

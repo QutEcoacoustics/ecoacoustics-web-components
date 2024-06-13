@@ -8,9 +8,19 @@ export const theming = css`
   :root {
     --oe-theme-hue: 247deg;
     --oe-theme-saturation: 87%;
-    --oe-theme-lightness: 95%;
+    --oe-theme-lightness: 54%;
 
-    --oe-background-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) + 22%));
+    /* A2O Colours */
+    /* --oe-theme-hue: 142deg;
+    --oe-theme-saturation: 25%;
+    --oe-theme-lightness: 35%; */
+
+    /* Ecosounds Colours */
+    /* --oe-theme-hue: 207;
+    --oe-theme-saturation: 100%;
+    --oe-theme-lightness: 25%; */
+
+    --oe-background-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), 100%);
     --oe-font-color: hsl(
       var(--oe-theme-hue),
       calc(var(--oe-theme-saturation) - 50%),
@@ -25,13 +35,21 @@ export const theming = css`
 
     --oe-spacing: 0.6em;
 
-    --oe-primary-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) - 38%));
-    --oe-secondary-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) - 3%));
-    --oe-accent-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) - 20%));
-    --oe-info-color: hsl(207deg, var(--oe-theme-saturation), calc(var(--oe-theme-lightness) - 15%));
+    --oe-primary-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), var(--oe-theme-lightness));
+    --oe-secondary-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) + 25%));
+    --oe-accent-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) + 20%));
+    --oe-info-color: hsl(207deg, calc(var(--oe-theme-saturation) + 45%), calc(var(--oe-theme-lightness) + 15%));
     --oe-danger-color: color-mix(in srgb, hsl(0deg, 80%, 46%) 85%, var(--oe-background-color));
-    --oe-selected-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) - 5%));
-    --oe-panel-color: hsl(var(--oe-theme-hue), var(--oe-theme-saturation), calc(var(--oe-theme-lightness) + 2%));
+    --oe-selected-color: hsl(
+      var(--oe-theme-hue),
+      var(--oe-theme-saturation),
+      max(calc(var(--oe-theme-lightness) + 25%), 90%)
+    );
+    --oe-panel-color: hsl(
+      var(--oe-theme-hue),
+      var(--oe-theme-saturation),
+      max(calc(var(--oe-theme-lightness) + 43%), 96%)
+    );
 
     --oe-font-color-lighter: color-mix(in srgb, var(--oe-font-color) 10%, var(--oe-background-color));
     --oe-panel-color-lighter: color-mix(in srgb, var(--oe-panel-color) 1%, var(--oe-background-color));
@@ -270,7 +288,9 @@ export const theming = css`
   }
 
   .oe-btn-secondary {
-    --background-color: var(--oe-secondary-color);
+    --background-color: var(--oe-background-color);
+    border: 2px solid var(--oe-secondary-color);
+    /* --background-color: var(--oe-secondary-color); */
   }
 
   .oe-btn-info {

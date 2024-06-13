@@ -90,7 +90,7 @@ export class DataSource extends AbstractComponent(LitElement) {
     return async (elapsedItems: number) => {
       // TODO: this is a hard coded grid size
       const startIndex = elapsedItems;
-      const endIndex = startIndex + 6;
+      const endIndex = startIndex + this.verificationGrid!.gridSize;
 
       return content.slice(startIndex, endIndex) ?? [];
     };

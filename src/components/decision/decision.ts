@@ -112,8 +112,7 @@ export class Decision extends AbstractComponent(LitElement) {
     return html`
       <button
         id="decision-button"
-        class="${classMap({ disabled: !!this.disabled })}"
-        style="--decision-color: ${this.color}"
+        class="oe-btn-primary ${classMap({ disabled: !!this.disabled })}"
         part="decision-button"
         title="Shortcut: ${this.shortcut}"
         aria-disabled="${this.disabled}"

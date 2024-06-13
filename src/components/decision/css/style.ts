@@ -6,7 +6,6 @@ export const decisionStyles = css`
 
     position: relative;
     height: 100%;
-    border: 4px solid var(--decision-color);
 
     & > div {
       display: block;

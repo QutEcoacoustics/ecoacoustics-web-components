@@ -1,6 +1,10 @@
 import { css } from "lit";
 
 export const verificationGridTileStyles = css`
+  :host {
+    --selected-border-size: 2px;
+  }
+
   .tile-container {
     --decision-color: var(--oe-panel-color);
 
@@ -10,10 +14,10 @@ export const verificationGridTileStyles = css`
     box-shadow: 4px 4px 8px var(--oe-panel-color);
     padding: var(--oe-spacing);
     cursor: pointer;
-    margin: calc(var(--oe-spacing) + 1px);
+    margin: calc(var(--oe-spacing));
     max-width: 350px;
 
-    border: 4px solid var(--decision-color);
+    border: var(--selected-border-size) solid var(--decision-color);
 
     &:hover {
       box-shadow: 0 2px 4px #e8e2e6;
@@ -21,9 +25,8 @@ export const verificationGridTileStyles = css`
   }
 
   .selected {
-    border: 2px solid var(--oe-accent-color);
+    border: var(--selected-border-size) solid var(--oe-accent-color);
     background-color: var(--oe-selected-color);
-    margin: 0.5rem;
   }
 
   .keyboard-hint {

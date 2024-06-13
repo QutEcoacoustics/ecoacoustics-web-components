@@ -1,4 +1,4 @@
-import { html, LitElement, svg } from "lit";
+import { html, LitElement, nothing, svg } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { axesStyles } from "./css/style";
 import { SignalWatcher } from "@lit-labs/preact-signals";
@@ -71,6 +71,12 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
 
   @property({ attribute: "y-label", type: String, reflect: true })
   public yLabel = "Frequency (KHz)";
+
+  @property({ attribute: "x-title", converter: booleanConverter })
+  public showXTitle = true;
+
+  @property({ attribute: "y-title", converter: booleanConverter })
+  public showYTitle = true;
 
   @property({ attribute: "x-axis", converter: booleanConverter })
   public showXAxis = true;
@@ -153,8 +159,8 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
 
     return svg`
       <g part="grid">
-        <g part="x-grid">${xAxisGridLines}</g>
-        <g part="y-grid">${yAxisGridLines}<g>
+        ${this.showXGrid ? svg`<g part="x-grid">${xAxisGridLines}</g>` : ``}
+        ${this.showYGrid ? svg`<g part="y-grid">${yAxisGridLines}</g>` : ``}
       </g>
     `;
   }
@@ -220,10 +226,11 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
       </g>`;
     };
 
-    const xAxisLabels = svg`${xValues.map((value) => xLabel(value))}`;
-    const yAxisLabels = svg`${yValues.map((value) => yLabel(value))}`;
+    const xAxisLabels = this.showXAxis ? svg`${xValues.map((value) => xLabel(value))}` : nothing;
+    const yAxisLabels = this.showYAxis ? svg`${yValues.map((value) => yLabel(value))}` : nothing;
 
-    const xAxisTitle = svg`
+    const xAxisTitle = this.showXTitle
+      ? svg`
       <text
         part="title x-title"
         x="${canvasSize.width / 2}"
@@ -233,9 +240,11 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
       >
         ${this.xLabel}
       </text>
-    `;
+    `
+      : nothing;
 
-    const yAxisTitle = svg`
+    const yAxisTitle = this.showYTitle
+      ? svg`
       <text
         part="title y-title"
         x="-${yTitleOffset}"
@@ -246,7 +255,8 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
       >
         ${this.yLabel}
       </text>
-    `;
+    `
+      : nothing;
 
     return svg`
       <g part="tick">

@@ -507,7 +507,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     const elementsToHide = Array.from(this.gridTiles).slice(-numberOfTiles);
 
     elementsToHide.forEach((element) => {
-      element.style.display = "none";
+      // element.style.display = "none";
     });
 
     this.hiddenTiles = numberOfTiles;
