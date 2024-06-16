@@ -21,7 +21,8 @@ export const verificationGridTileStyles = css`
       TODO: find out why we don't need this.
       I think we do need something like this
     */
-    /* max-width: 350px; */
+    max-width: 350px;
+    min-width: 350px;
 
     border: var(--selected-border-size) solid var(--decision-color);
 

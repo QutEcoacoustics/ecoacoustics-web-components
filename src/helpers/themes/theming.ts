@@ -11,9 +11,9 @@ export const theming = css`
     --oe-theme-lightness: 54%;
 
     /* A2O Colours */
-    --oe-theme-hue: 142deg;
+    /* --oe-theme-hue: 142deg;
     --oe-theme-saturation: 25%;
-    --oe-theme-lightness: 35%;
+    --oe-theme-lightness: 35%; */
 
     /* Ecosounds Colours */
     /* --oe-theme-hue: 207;

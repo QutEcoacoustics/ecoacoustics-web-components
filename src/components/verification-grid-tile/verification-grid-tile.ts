@@ -62,8 +62,11 @@ export class VerificationGridTile extends AbstractComponent(LitElement) {
   @queryDeeplyAssignedElement({ selector: "oe-spectrogram" })
   public spectrogram: Spectrogram | undefined;
 
+  public loaded = false;
   private shortcuts: string[] = [];
   private shortcutHandler = this.handleKeyDown.bind(this);
+  private loadingHandler = this.handleLoading.bind(this);
+  private loadedHandler = this.handleLoaded.bind(this);
 
   public connectedCallback(): void {
     super.connectedCallback();
@@ -72,7 +75,22 @@ export class VerificationGridTile extends AbstractComponent(LitElement) {
 
   public disconnectedCallback(): void {
     document.removeEventListener("keydown", this.shortcutHandler);
+
+    if (this.spectrogram) {
+      this.spectrogram.removeEventListener("loading", this.loadingHandler);
+      this.spectrogram.removeEventListener("loaded", this.loadedHandler);
+    }
+
     super.disconnectedCallback();
+  }
+
+  public firstUpdated(): void {
+    if (!this.spectrogram) {
+      throw new Error("Could not find spectrogram component");
+    }
+
+    this.spectrogram.addEventListener("loading", this.loadingHandler);
+    this.spectrogram.addEventListener("loaded", this.loadedHandler);
   }
 
   public willUpdate(): void {
@@ -82,6 +100,16 @@ export class VerificationGridTile extends AbstractComponent(LitElement) {
 
     const shortcutKey = shortcutOrder[this.index];
     this.shortcuts = [shortcutKey, shortcutTranslation[shortcutKey] ?? ""];
+  }
+
+  // this method is called when the spectrogram starts rendering
+  private handleLoading(): void {
+    this.loaded = false;
+  }
+
+  // this method is called when the spectrogram finishes rendering
+  private handleLoaded(): void {
+    this.loaded = true;
   }
 
   private handleKeyDown(event: KeyboardEvent): void {

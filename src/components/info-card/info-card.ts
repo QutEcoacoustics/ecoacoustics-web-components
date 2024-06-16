@@ -76,7 +76,7 @@ export class InfoCard extends AbstractComponent(LitElement) {
   public render() {
     const subject: VerificationSubject | undefined = this.model?.subject;
 
-    console.log("new model");
+    console.log("new info model", this.model);
 
     return html`
       <div class="card-container ${classMap({ expanded: this.showExpanded })}">
