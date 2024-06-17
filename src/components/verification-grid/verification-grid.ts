@@ -16,6 +16,7 @@ import { VerificationHelpDialog } from "./help-dialog";
 import colorBrewer from "colorbrewer";
 import { booleanConverter } from "../../helpers/attributes";
 import { sleep } from "../../helpers/utilities";
+import { classMap } from "lit/directives/class-map.js";
 
 export type SelectionObserverType = "desktop" | "tablet" | "default";
 export type PageFetcher = (elapsedItems: number) => Promise<VerificationSubject[]>;
@@ -93,9 +94,11 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   @state()
   private historyHead = 0;
 
+  @state()
+  public dataSource: DataSource | undefined;
+
   public decisions: Verification[] = [];
   public undecidedTiles: Verification[] = [];
-  public dataSource: DataSource | undefined;
   private hiddenTiles = 0;
 
   // TODO: find a better way to do this
@@ -134,7 +137,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   }
 
   protected async updated(change: PropertyValueMap<this>): Promise<void> {
-    const reRenderKeys: (keyof this)[] = ["gridSize", "audioKey"];
+    const reRenderKeys: (keyof this)[] = ["gridSize", "audioKey", "dataSource"];
     const elementsToObserve = this.gridTiles;
 
     const sourceInvalidationKeys: (keyof this)[] = ["getPage"];
@@ -448,17 +451,16 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     this.resetSpectrogramSettings();
 
     this.pagedItems += pagedItems;
-    const nextPage = await this.getPage(this.pagedItems);
-    const nextPageVerificationModels = nextPage.map(VerificationParser.parse);
-    const uniqueVerificationModels = nextPageVerificationModels.filter(
-      (model: Verification) =>
-        this.decisions.map((decision) => decision.url).indexOf(model.url) === -1 &&
-        this.undecidedTiles.map((model) => model.url).indexOf(model.url) === -1,
+    const nextPage = (await this.getPage(this.pagedItems)).map(VerificationParser.parse);
+
+    // get all verification models that are not in the undecided tiles
+    const undecidedUrls = this.undecidedTiles.map((tile: Verification) => tile.url);
+    const decisionUrls = this.decisions.map((decision: Verification) => decision.url);
+    const newVerificationModels = nextPage.filter(
+      (model: Verification) => !undecidedUrls.includes(model.url) && !decisionUrls.includes(model.url),
     );
-    const nextPageSubset = uniqueVerificationModels.slice(0, pagedItems);
 
-    const pageToRender = [...this.undecidedTiles, ...nextPageSubset];
-
+    const pageToRender = [...this.undecidedTiles, ...newVerificationModels];
     this.renderVirtualPage(pageToRender);
   }
 
@@ -530,9 +532,13 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
     const decisionButton = this.decisionElements.find((element: Decision) => {
       const tagMatches = element.tag === tagToMatch;
-      const additionalTagsMatch = element.additionalTags === additionalTagsToMatch;
       const verificationMatches = element.verified === verificationToMatch;
 
+      if (additionalTagsToMatch === "") {
+        return tagMatches && verificationMatches;
+      }
+
+      const additionalTagsMatch = element.additionalTags === additionalTagsToMatch;
       return tagMatches && additionalTagsMatch && verificationMatches;
     });
 
@@ -672,7 +678,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
   private handleSpectrogramLoaded(): void {
     const areDecisionsDisabled = this.decisionElements[0].disabled;
-    const areLoading = this.areSpectrogramsLoaded();
+    const areLoading = !this.areSpectrogramsLoaded();
 
     if (areDecisionsDisabled !== areLoading) {
       this.decisionElements.forEach((decisionElement: Decision) => {
@@ -864,8 +870,6 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
       <oe-verification-help-dialog></oe-verification-help-dialog>
 
       <div class="verification-container">
-        ${this.statisticsTemplate()}
-
         <div
           @selected="${this.selectionHandler}"
           @pointerdown="${this.renderHighlightBox}"
@@ -890,12 +894,16 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
               Previous Page
             </button>
 
-            <button class="oe-btn-secondary" ?disabled="${!this.canNavigateNext()}" @click="${() => this.nextPage()}">
+            <button
+              class="oe-btn-secondary ${classMap({ hidden: this.autoPage })}"
+              ?disabled="${!this.canNavigateNext()}"
+              @click="${() => this.nextPage()}"
+            >
               Next Page
             </button>
 
             <button
-              class="oe-btn-secondary"
+              class="oe-btn-secondary ${classMap({ hidden: !this.isViewingHistory() })}"
               ?disabled="${!this.isViewingHistory()}"
               @click="${() => this.resumeVerification()}"
             >
@@ -918,6 +926,9 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
           </span>
         </div>
       </div>
+
+      <div>${this.statisticsTemplate()}</div>
+
       ${this.highlightBoxTemplate()}
     `;
   }

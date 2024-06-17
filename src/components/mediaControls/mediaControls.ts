@@ -164,7 +164,7 @@ export class MediaControls extends AbstractComponent(LitElement) {
           ${this.selectSettingsTemplate("windowSize", "Window Size", ["128", "256", "512", "1024", "2048"])}
           ${this.selectSettingsTemplate("windowOverlap", "Window Overlap", ["128", "256", "512", "1024"])}
           ${this.selectSettingsTemplate("melScale", "Scale", ["linear", "mel"])}
-
+<!-- 
           <sl-menu-item>
             Axes
             <sl-menu @sl-select="" slot="submenu">
@@ -196,7 +196,7 @@ export class MediaControls extends AbstractComponent(LitElement) {
                 </label>
               </sl-menu-item>
             </sl-menu>
-          </sl-menu-item>
+          </sl-menu-item> -->
       </sl-dropdown>
     `;
   }
@@ -258,7 +258,7 @@ export class MediaControls extends AbstractComponent(LitElement) {
         <a slot="trigger">${unsafeSVG(lucideSunIcon)}</a>
         <label>
           <input @change="${changeBrightnessHandler}" type="range" min="-0.5" max="0.5" step="0.1" value="0" />
-          <input @change="${changeBrightnessHandler}" size="1" type="number" min="0" max="2" step="0.1" value="1" />
+          <!-- <input @change="${changeBrightnessHandler}" size="1" type="number" min="0" max="2" step="0.1" value="1" /> -->
         </label>
       </sl-dropdown>
 
@@ -266,7 +266,7 @@ export class MediaControls extends AbstractComponent(LitElement) {
         <a slot="trigger">${unsafeSVG(lucideContrastIcon)}</a>
         <label>
           <input @change="${changeContrastHandler}" type="range" min="0" max="2" step="0.1" value="1" />
-          <input @change="${changeContrastHandler}" size="1" type="number" min="0" max="2" step="0.1" value="1" />
+          <!-- <input @change="${changeContrastHandler}" size="1" type="number" min="0" max="2" step="0.1" value="1" /> -->
         </label>
       </sl-dropdown>
 

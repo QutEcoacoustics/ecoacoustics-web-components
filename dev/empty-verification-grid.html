@@ -16,7 +16,6 @@
                     <oe-spectrogram id="spectrogram" color-map="audacity"></oe-spectrogram>
                 </oe-indicator>
             </oe-axes>
-            <oe-media-controls for="spectrogram"></oe-media-controls>
             <oe-info-card></oe-info-card>
         </template>
 
@@ -25,9 +24,10 @@
         <oe-decision verified="true" tag="cow" shortcut="k">Cow</oe-decision>
         <oe-decision verified="false" tag="*" shortcut="L">Negative</oe-decision>
         <oe-decision verified="false" shortcut="S" skip>Skip</oe-decision>
-    </oe-verification-grid>
 
-    <oe-data-source for="verification-grid" local></oe-data-source>
+        <oe-data-source slot="data-source" for="verification-grid" local>
+        </oe-data-source>
+    </oe-verification-grid>
 </body>
 
 </html>
