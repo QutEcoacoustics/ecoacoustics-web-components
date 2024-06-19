@@ -501,3 +501,9 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
     `;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "oe-spectrogram": Spectrogram;
+  }
+}
