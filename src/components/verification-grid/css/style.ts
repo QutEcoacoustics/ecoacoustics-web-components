@@ -8,10 +8,8 @@ export const verificationGridStyles = css`
     left: 0px;
     width: 0px;
     height: 0px;
-    position: absolute;
-    /* background-color: #00bbff; */
-    background-color: #0099ee;
-    border: solid 2px #002299;
+    background-color: var(--oe-selected-color);
+    border: solid 2px var(--oe-border-color);
     border-radius: 1rem;
     opacity: 0.3;
     z-index: 5;

@@ -82,6 +82,9 @@ export class VerificationHelpDialog extends AbstractComponent(LitElement) {
       { key: "Ctrl + Click", description: "Toggle the selection of a single item" },
       { key: "Ctrl + Shift + Click", description: "Select a range of items" },
       { key: "Esc", description: "Deselect all items" },
+      { key: "Alt", description: "Show possible keyboard shortcuts" },
+      { key: "Left Arrow", description: "Go back to the previous page" },
+      { key: "Right Arrow", description: "Go to the next page (when viewing history)" },
     ];
 
     // decision shortcuts are fetched from the decision elements

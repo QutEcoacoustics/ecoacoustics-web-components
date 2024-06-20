@@ -5,6 +5,11 @@ export const verificationGridTileStyles = css`
     --selected-border-size: 3px;
   }
 
+  #highlight-box {
+    position: absolute;
+    pointer-events: none;
+  }
+
   .tile-container {
     --decision-color: var(--oe-panel-color);
 

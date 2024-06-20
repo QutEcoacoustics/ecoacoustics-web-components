@@ -96,7 +96,6 @@ export class Decision extends AbstractComponent(LitElement) {
     // to cancel creating the decision
     if (event.key.toLocaleLowerCase() === "escape") {
       this.shouldHandleKeyUp = false;
-      this.showDecisionColor = false;
     }
   }
 
