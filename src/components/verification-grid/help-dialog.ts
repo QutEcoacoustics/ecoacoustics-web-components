@@ -34,8 +34,6 @@ export class VerificationHelpDialog extends AbstractComponent(LitElement) {
     if (shouldShowHelpDialog) {
       this.helpDialogElement.showModal();
     }
-
-    console.log("decision elements", this.decisionElements);
   }
 
   public showModal(showRememberOption = true) {

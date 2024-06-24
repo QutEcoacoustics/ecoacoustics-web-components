@@ -193,6 +193,12 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     // TODO: figure out if there is a better way to do this invalidation
     if (sourceInvalidationKeys.some((key) => change.has(key))) {
       this.pagedItems = 0;
+      this.decisions = [];
+
+      // if the user is in the middle of viewing history when they load a new
+      // verification file, we want to change back to the default verification
+      // interface don't show any decision highlights, etc...
+      this.verificationView();
 
       if (this.gridTiles?.length) {
         await this.renderCurrentPage();
@@ -502,17 +508,27 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
       this.gridTiles[i].color = color;
     });
 
+    this.historyView();
+  }
+
+  // changes the verification grid to the "history mode" layout
+  private historyView(): void {
     this.showDecisionButtonHighlight();
   }
 
-  /** Returns the user from viewing/verifying history back to seeing new results */
-  private resumeVerification(): void {
+  // changes the verification grid to the "normal mode" layout
+  private verificationView(): void {
     this.historyHead = 0;
-    this.renderCurrentPage();
 
     this.removeSubSelection();
     this.removeDecisionHighlight();
     this.removeDecisionButtonHighlight();
+  }
+
+  /** Returns the user from viewing/verifying history back to seeing new results */
+  private resumeVerification(): void {
+    this.renderCurrentPage();
+    this.verificationView();
   }
 
   private async nextPage(pagedItems: number = this.gridSize): Promise<void> {
@@ -825,6 +841,10 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
   private doneRenderBoxInit = false;
   private renderHighlightBox(event: PointerEvent) {
+    if (!this.canSubSelect()) {
+      return;
+    }
+
     if (event.isPrimary) {
       // TODO: enable this once I want highlighting again
       this.highlighting = true;
@@ -837,7 +857,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
       if (!this.doneRenderBoxInit) {
         // const intersectionObserver = new IntersectionObserver((event) => this.highlightIntersectionHandler(event));
         // intersectionObserver.observe(element);
-      
+
         this.gridTiles.forEach((tile) => {
           this.highlight.elements.push({
             position: tile.getBoundingClientRect(),
@@ -984,12 +1004,13 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   private decisionPrompt(): TemplateResult<1> {
     const subSelection = this.currentSubSelection();
     const subSelectionCount = subSelection.length;
+    const hasMultipleTiles = this.gridSize > 1;
 
     if (subSelectionCount > 0) {
       return html`<p>Are all of the selected ${subSelectionCount} a</p>`;
     }
 
-    return html`<p>Are all of these a</p>`;
+    return html`<p>${hasMultipleTiles ? "Are all of these a" : "Is the shown spectrogram a"}</p>`;
   }
 
   private statisticsTemplate(): TemplateResult<1> {
@@ -1015,18 +1036,18 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   public render() {
     return html`
       <oe-verification-help-dialog></oe-verification-help-dialog>
-      <div id="highlight-box" @click="${this.handleHighlightClick}" @mouseup="${this.hideHighlightBox}" @mousemove="${this.resizeHighlightBox}"></div>
+      <div id="highlight-box" @mouseup="${this.hideHighlightBox}" @mousemove="${this.resizeHighlightBox}"></div>
 
       <div class="verification-container">
-          <div
-            @selected="${this.selectionHandler}"
-            @pointerdown="${this.renderHighlightBox}"
-            @pointerup="${this.hideHighlightBox}"
-            @pointermove="${this.resizeHighlightBox}"
-            class="verification-grid"
-          >
-            ${this.spectrogramElements}
-          </div>
+        <div
+          @selected="${this.selectionHandler}"
+          @pointerdown="${this.renderHighlightBox}"
+          @pointerup="${this.hideHighlightBox}"
+          @pointermove="${this.resizeHighlightBox}"
+          class="verification-grid"
+        >
+          ${this.spectrogramElements}
+        </div>
 
         <div class="verification-controls">
           <span class="decision-controls-left">

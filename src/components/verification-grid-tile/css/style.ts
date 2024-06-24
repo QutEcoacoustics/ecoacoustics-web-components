@@ -24,7 +24,7 @@ export const verificationGridTileStyles = css`
     min-width: 350px;
 
     border: var(--selected-border-size) solid var(--decision-color);
-    transition: border-color var(--oe-animation-time) ease-out;
+    transition: border-color var(--oe-animation-time) ease-out, border-size var(--oe-animation-time) ease-out;
 
     &:hover {
       box-shadow: 0 2px 4px #e8e2e6;
