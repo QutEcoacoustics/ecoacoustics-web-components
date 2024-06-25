@@ -175,6 +175,10 @@ export class MediaControls extends AbstractComponent(LitElement) {
 
     const changeHandler = (key: keyof SpectrogramOptions) => {
       return (event: CustomEvent<{ item: SlMenuItem }>) => {
+        if (!this.spectrogramElement) {
+          throw new Error("No spectrogram element found");
+        }
+
         // TODO: remove this after demo
         let newValue: string | number | boolean = ["windowSize", "windowOverlap"].includes(key)
           ? Number(event.detail.item.value)
@@ -184,14 +188,14 @@ export class MediaControls extends AbstractComponent(LitElement) {
           newValue = newValue === "mel";
         }
 
-        const oldOptions = this.spectrogramElement!.spectrogramOptions;
+        const oldOptions = this.spectrogramElement.spectrogramOptions;
         if (key === "windowSize" && this.spectrogramElement) {
           if (this.spectrogramElement.spectrogramOptions.windowOverlap >= (newValue as number)) {
             oldOptions.windowOverlap = (newValue as number) / 2;
           }
         }
 
-        this.spectrogramElement!.spectrogramOptions = {
+        this.spectrogramElement.spectrogramOptions = {
           ...oldOptions,
           [key]: newValue,
         } as any;
@@ -314,30 +318,42 @@ export class MediaControls extends AbstractComponent(LitElement) {
 
   private spectrogramSettingsTemplate(): TemplateResult<1> {
     const changeColorHandler = (event: CustomEvent<{ item: SlMenuItem }>) => {
+      if (!this.spectrogramElement) {
+        throw new Error("No spectrogram element found");
+      }
+
       const newValue = event.detail.item.value;
 
-      const oldOptions = this.spectrogramElement!.spectrogramOptions;
-      this.spectrogramElement!.spectrogramOptions = {
+      const oldOptions = this.spectrogramElement.spectrogramOptions;
+      this.spectrogramElement.spectrogramOptions = {
         ...oldOptions,
         colorMap: newValue,
       } as any;
     };
 
     const changeBrightnessHandler = (event: CustomEvent) => {
+      if (!this.spectrogramElement) {
+        throw new Error("No spectrogram element found");
+      }
+
       const newValue = (event.target as HTMLInputElement).value;
 
-      const oldOptions = this.spectrogramElement!.spectrogramOptions;
-      this.spectrogramElement!.spectrogramOptions = {
+      const oldOptions = this.spectrogramElement.spectrogramOptions;
+      this.spectrogramElement.spectrogramOptions = {
         ...oldOptions,
         brightness: Number(newValue),
       } as any;
     };
 
     const changeContrastHandler = (event: CustomEvent) => {
+      if (!this.spectrogramElement) {
+        throw new Error("No spectrogram element found");
+      }
+
       const newValue = (event.target as HTMLInputElement).value;
 
-      const oldOptions = this.spectrogramElement!.spectrogramOptions;
-      this.spectrogramElement!.spectrogramOptions = {
+      const oldOptions = this.spectrogramElement.spectrogramOptions;
+      this.spectrogramElement.spectrogramOptions = {
         ...oldOptions,
         contrast: Number(newValue),
       } as any;

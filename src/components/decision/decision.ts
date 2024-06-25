@@ -6,6 +6,13 @@ import { classMap } from "lit/directives/class-map.js";
 import { SelectionObserverType } from "../verification-grid/verification-grid";
 import { booleanConverter } from "../../helpers/attributes";
 
+export enum VerificationDecision {
+  FALSE = "false",
+  TRUE = "true",
+  UNSURE = "unsure",
+  SKIP = "skip",
+}
+
 /**
  * A decision that can be made either with keyboard shortcuts or by clicking
  * on the element
@@ -22,8 +29,17 @@ import { booleanConverter } from "../../helpers/attributes";
 export class Decision extends AbstractComponent(LitElement) {
   public static styles = unsafeCSS(decisionStyles);
 
-  @property({ type: Boolean, reflect: true, converter: booleanConverter })
+  @property({ type: Boolean, converter: booleanConverter })
   public verified: boolean | undefined;
+
+  @property({ type: Boolean, converter: booleanConverter })
+  public all: boolean | undefined;
+
+  @property({ type: Boolean, converter: booleanConverter })
+  public skip: boolean | undefined;
+
+  @property({ type: Boolean, converter: booleanConverter })
+  public unsure: boolean | undefined;
 
   @property({ type: String, reflect: true })
   public tag: string | undefined;
@@ -43,17 +59,26 @@ export class Decision extends AbstractComponent(LitElement) {
   @property({ attribute: "disabled", type: Boolean, converter: booleanConverter, reflect: true })
   public disabled = false;
 
-  @property({ type: Boolean, converter: booleanConverter })
-  public all: boolean | undefined;
-
-  @property({ type: Boolean, converter: booleanConverter })
-  public skip: boolean | undefined;
-
   @query("#decision-button")
   private decisionButton!: HTMLButtonElement;
 
   @state()
   public selectionMode: SelectionObserverType = "desktop";
+
+  public get verificationDecision(): VerificationDecision {
+    switch (true) {
+      case this.verified === true:
+        return VerificationDecision.TRUE;
+      case this.verified === false:
+        return VerificationDecision.FALSE;
+      case this.skip === true:
+        return VerificationDecision.SKIP;
+      case this.unsure === true:
+        return VerificationDecision.UNSURE;
+      default:
+        return VerificationDecision.FALSE;
+    }
+  }
 
   private keyUpHandler = this.handleKeyUp.bind(this);
   private keyDownHandler = this.handleKeyDown.bind(this);
@@ -128,7 +153,7 @@ export class Decision extends AbstractComponent(LitElement) {
     this.dispatchEvent(
       new CustomEvent("decision", {
         detail: {
-          value: this.verified,
+          value: this.verificationDecision,
           tag: this.tag,
           additionalTags,
           color: this.color,

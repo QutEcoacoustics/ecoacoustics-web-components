@@ -24,8 +24,9 @@
             <oe-decision verified="true" tag="koala" additional-tags="female" shortcut="H">Koala</oe-decision>
             <oe-decision verified="true" tag="koala" additional-tags="male" shortcut="J">Koala</oe-decision>
             <oe-decision verified="true" tag="cow" shortcut="k">Cow</oe-decision>
-            <oe-decision verified="false" tag="*" shortcut="L">Negative</oe-decision>
-            <oe-decision verified="false" shortcut="S" skip>Skip</oe-decision>
+            <oe-decision verified="false" tag="*" shortcut="L" all>Negative</oe-decision>
+            <oe-decision shortcut="S" skip>Skip</oe-decision>
+            <oe-decision shortcut="S" unsure>Unsure</oe-decision>
 
             <!--
                 local would use a file picker UI, while src would allow a remote file

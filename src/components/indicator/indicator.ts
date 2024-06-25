@@ -28,11 +28,15 @@ export class Indicator extends AbstractComponent(LitElement) {
   private computedTimePx: ReadonlySignal<number> = computed(() => 0);
 
   public handleSlotChange(): void {
-    if (this.spectrogram) {
-      this.unitConverter = this.spectrogram.unitConverters!;
+    if (this.spectrogram && this.spectrogram.unitConverters) {
+      this.unitConverter = this.spectrogram.unitConverters;
 
       this.computedTimePx = computed(() => {
-        const time = this.spectrogram!.currentTime;
+        if (!this.spectrogram) {
+          return 0;
+        }
+
+        const time = this.spectrogram.currentTime;
         const scale = this.unitConverter.scaleX.value;
         console.log("new time", time.value);
         return scale(time.value);

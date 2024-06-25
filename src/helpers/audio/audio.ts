@@ -161,7 +161,7 @@ export class AudioHelper {
     src: string | null = null,
   ): Promise<IAudioInformation> {
     const downloadedBuffer = src ? await this.fetchAudio(src) : await this.cachedBuffer();
-    const info = this.cachedAudioInformation!;
+    const info = this.cachedAudioInformation as IAudioInformation;
 
     // recreate the processor every time!
     await this.createAudioContext(info, downloadedBuffer, generation);
@@ -277,16 +277,24 @@ export class AudioHelper {
   // messages
 
   private async setupWorker() {
+    if (!this.offscreenCanvas) {
+      throw new Error("Canvas is not initialized");
+    }
+
+    if (!this.spectrogramWorker) {
+      throw new Error("Worker is not initialized");
+    }
+
     const message: WorkerSetupMessage = [
       "setup",
       {
         state: this.state.stateBuffer,
         sampleBuffer: this.sampleBuffer,
-        canvas: this.offscreenCanvas!,
+        canvas: this.offscreenCanvas,
       },
     ];
 
-    this.spectrogramWorker!.postMessage(message, [this.offscreenCanvas!]);
+    this.spectrogramWorker.postMessage(message, [this.offscreenCanvas]);
 
     await this.state.waitForWorkerReady();
   }
@@ -309,6 +317,10 @@ export class AudioHelper {
   }
 
   private regenerateWorker(options: SpectrogramOptions, audioInformation: IAudioInformation, generation: number) {
+    if (!this.spectrogramWorker) {
+      throw new Error("Worker is not initialized");
+    }
+
     const message: WorkerRegenerateSpectrogramMessage = [
       "regenerate-spectrogram",
       {
@@ -318,6 +330,6 @@ export class AudioHelper {
       },
     ];
 
-    this.spectrogramWorker!.postMessage(message);
+    this.spectrogramWorker.postMessage(message);
   }
 }

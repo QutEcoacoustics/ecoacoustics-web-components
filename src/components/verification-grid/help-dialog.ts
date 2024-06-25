@@ -43,7 +43,11 @@ export class VerificationHelpDialog extends AbstractComponent(LitElement) {
 
   // TODO: narrow the typing here
   private closeHelpDialog(): void {
-    const dialogPreference = this.shadowRoot!.getElementById("dialog-preference") as HTMLInputElement;
+    if (!this.shadowRoot) {
+      throw new Error("Shadow root not found");
+    }
+
+    const dialogPreference = this.shadowRoot.getElementById("dialog-preference") as HTMLInputElement;
 
     if (!dialogPreference) {
       return;

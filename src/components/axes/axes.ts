@@ -101,14 +101,16 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
   private titleOffset: Pixel = 4;
 
   private handleSlotchange(): void {
-    this.unitConverter = this.spectrogram.unitConverters!;
+    if (this.spectrogram.unitConverters) {
+      this.unitConverter = this.spectrogram.unitConverters;
+    }
   }
 
   // because querying the DOM for the font size will cause a repaint and reflow
   // we calculate the value once using a canvas
   private calculateFontSize(text = "M"): Size {
     const element = document.createElement("canvas");
-    const context = element.getContext("2d")!;
+    const context = element.getContext("2d") as CanvasRenderingContext2D;
     context.font = "var(--oe-font-size) var(--oe-font-family)";
 
     const measurements = context.measureText(text);
@@ -416,7 +418,7 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
     // if include end is set, we always want to show the last value in the axes
     // however, if appending the largest value would result in the labels overlapping
     // we want to remove the last "step" label and replace it with the real last value
-    const lastLabel = values.at(-1)!;
+    const lastLabel = values.at(-1) ?? 0;
     const proposedLastLabel = end;
 
     const lastLabelPosition = scale(lastLabel);

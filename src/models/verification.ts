@@ -20,7 +20,7 @@ export class Verification {
   // or this could be the csv row
   public subject: VerificationSubject;
   public url: string;
-  public tag: Tag | null;
+  public tag: Tag;
   public confirmed: boolean;
   public additionalTags: string[];
 

@@ -199,11 +199,11 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
     this.audioHelper
       .connect(this.renderedSource, this.canvas, this.spectrogramOptions)
       .then((info: IAudioInformation) => {
-        const originalRecording = { duration: info.duration!, startOffset: this.offset };
+        const originalRecording = { duration: info.duration, startOffset: this.offset };
 
         this.audio.value = new AudioModel({
-          duration: info.duration!,
-          sampleRate: info.sampleRate!,
+          duration: info.duration,
+          sampleRate: info.sampleRate,
           originalAudioRecording: originalRecording,
         });
 
@@ -230,11 +230,11 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
     );
 
     this.audioHelper.changeSource(this.renderedSource, this.spectrogramOptions).then((info: IAudioInformation) => {
-      const originalRecording = { duration: info.duration!, startOffset: this.offset };
+      const originalRecording = { duration: info.duration, startOffset: this.offset };
 
       this.audio.value = new AudioModel({
-        duration: info.duration!,
-        sampleRate: info.sampleRate!,
+        duration: info.duration,
+        sampleRate: info.sampleRate,
         originalAudioRecording: originalRecording,
       });
 

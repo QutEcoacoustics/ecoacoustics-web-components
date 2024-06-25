@@ -652,7 +652,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   }
 
   private decisionColor(verification: Verification): string {
-    const tagToMatch = verification.tag!.text;
+    const tagToMatch = verification.tag.text;
     const additionalTagsToMatch = verification.additionalTags.toString();
     const verificationToMatch = verification.confirmed;
 
@@ -849,7 +849,11 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
       // TODO: enable this once I want highlighting again
       this.highlighting = true;
 
-      const element = this.shadowRoot!.getElementById("highlight-box");
+      if (!this.shadowRoot) {
+        return;
+      }
+
+      const element = this.shadowRoot.getElementById("highlight-box");
       if (!element) {
         return;
       }
@@ -881,7 +885,11 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
       return;
     }
 
-    const element = this.shadowRoot!.getElementById("highlight-box");
+    if (!this.shadowRoot) {
+      return;
+    }
+
+    const element = this.shadowRoot.getElementById("highlight-box");
     if (!element) {
       return;
     }
@@ -927,8 +935,13 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
   }
 
   private hideHighlightBox(): void {
+    if (!this.shadowRoot) {
+      return;
+    }
+
     this.highlighting = false;
-    const element = this.shadowRoot!.getElementById("highlight-box");
+
+    const element = this.shadowRoot.getElementById("highlight-box");
     if (!element) {
       return;
     }
