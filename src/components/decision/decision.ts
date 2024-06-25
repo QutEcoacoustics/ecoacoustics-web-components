@@ -180,7 +180,7 @@ export class Decision extends AbstractComponent(LitElement) {
         part="decision-button"
         title="Shortcut: ${this.shortcut}"
         aria-disabled="${this.disabled}"
-        @click="${this.emitDecision}"
+        @pointerup="${this.emitDecision}"
       >
         <div class="tag-text"><slot></slot></div>
         <div class="additional-tags">${additionalTagsTemplate}</div>

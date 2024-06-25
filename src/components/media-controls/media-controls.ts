@@ -415,7 +415,7 @@ export class MediaControls extends AbstractComponent(LitElement) {
   public render() {
     return html`
       <div class="container">
-        <a id="action-button" @click="${this.toggleAudio}">
+        <a id="action-button" @pointerdown="${this.toggleAudio}">
           ${this.isSpectrogramPlaying() ? this.pauseIcon() : this.playIcon()}
         </a>
 

@@ -102,8 +102,8 @@ export class VerificationHelpDialog extends AbstractComponent(LitElement) {
 
     // TODO: there are some hacks in here to handle closing the modal when the user clicks off
     return html`
-      <dialog id="help-dialog" @click="${() => this.helpDialogElement.close()}" @close="${this.closeHelpDialog}">
-        <div class="dialog-container" @click="${(event: PointerEvent) => event.stopPropagation()}">
+      <dialog id="help-dialog" @pointerdown="${() => this.helpDialogElement.close()}" @close="${this.closeHelpDialog}">
+        <div class="dialog-container" @pointerdown="${(event: PointerEvent) => event.stopPropagation()}">
           <div class="dialog-content">
             <section>
               <h1>Information</h1>

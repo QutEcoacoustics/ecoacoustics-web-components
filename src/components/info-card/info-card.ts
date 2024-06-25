@@ -78,7 +78,7 @@ export class InfoCard extends AbstractComponent(LitElement) {
 
         <div class="static-actions">
           <a href="${this.model?.url ?? ""}" target="_blank" download>Download Recording</a>
-          <a @click="${() => (this.showExpanded = !this.showExpanded)}">
+          <a @pointerdown="${() => (this.showExpanded = !this.showExpanded)}">
             ${this.showExpanded ? "Show Less" : "Show More"}
           </a>
         </div>

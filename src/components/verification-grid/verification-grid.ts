@@ -1064,14 +1064,14 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
         <div class="verification-controls">
           <span class="decision-controls-left">
-            <button @click="${() => this.helpDialog.showModal(false)}" class="oe-btn-info" rel="help">
+            <button @pointerdown="${() => this.helpDialog.showModal(false)}" class="oe-btn-info" rel="help">
               ${unsafeSVG(lucideCircleHelp)}
             </button>
 
             <button
               class="oe-btn oe-btn-secondary"
               ?disabled="${!this.canNavigatePrevious()}"
-              @click="${() => this.previousPage()}"
+              @pointerdown="${() => this.previousPage()}"
             >
               ${this.gridSize > 1 ? "Previous Page" : "Previous"}
             </button>
@@ -1079,7 +1079,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
             <button
               class="oe-btn-secondary ${classMap({ hidden: this.autoPage && !this.isViewingHistory() })}"
               ?disabled="${!this.canNavigateNext()}"
-              @click="${() => this.handleNextPageClick()}"
+              @pointerdown="${() => this.handleNextPageClick()}"
             >
               ${this.gridSize > 1 ? "Next Page" : "Next"}
             </button>
@@ -1087,7 +1087,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
             <button
               class="oe-btn-secondary ${classMap({ hidden: !this.isViewingHistory() })}"
               ?disabled="${!this.isViewingHistory()}"
-              @click="${() => this.resumeVerification()}"
+              @pointerdown="${() => this.resumeVerification()}"
             >
               Continue Verifying
             </button>
@@ -1102,7 +1102,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
           <span class="decision-controls-right">
             <slot name="data-source"></slot>
-            <button @click="${this.downloadResults}" ?disabled="${!this.canDownloadResults()}" class="oe-btn-secondary">
+            <button @pointerdown="${this.downloadResults}" ?disabled="${!this.canDownloadResults()}" class="oe-btn-secondary">
               Download Results
             </button>
           </span>

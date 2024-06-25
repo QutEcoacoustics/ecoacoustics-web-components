@@ -190,7 +190,7 @@ export class VerificationGridTile extends AbstractComponent(LitElement) {
   public render() {
     return html`
       <div
-        @click="${this.handleClick}"
+        @pointerdown="${this.handleClick}"
         class="tile-container ${classMap({ selected: this.selected })}"
         style="--decision-color: ${this.color}"
       >
