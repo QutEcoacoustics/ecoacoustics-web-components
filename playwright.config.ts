@@ -6,5 +6,11 @@ export default defineConfig({
   // that contains audio files used in testing
   webServer: {
     command: "pnpm dlx vite --port 3000",
+    url: "http://localhost:3000",
+  },
+  use: {
+    ctViteConfig: {
+      configFile: "vite.config.ts",
+    },
   },
 });

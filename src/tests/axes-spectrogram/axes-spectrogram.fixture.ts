@@ -1,5 +1,5 @@
 import { getBrowserAttribute, getBrowserValue, setBrowserAttribute } from "../helpers";
-import { Axes } from "axes/axes";
+import { Axes } from "../../components/axes/axes";
 import { Spectrogram } from "../../components/spectrogram/spectrogram";
 import { test } from "@sand4rt/experimental-ct-web";
 import { Page } from "@playwright/test";
@@ -13,7 +13,7 @@ class TestPage {
   public yAxisTicks = () => this.page.locator("#y-axis-g line").all();
   public xGridLines = () => this.page.locator("#x-gridlines-g line").all();
   public yGridLines = () => this.page.locator("#y-gridlines-g line").all();
-  private audioSource = "/example.flac";
+  private audioSource = "http://127.0.0.1/example.flac";
 
   // render window should be in the format x0, y0, x1, y1
   public async create(offset?: number, renderWindow?: string) {

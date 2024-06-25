@@ -1,7 +1,7 @@
 import { Page } from "@playwright/test";
 import { test } from "@sand4rt/experimental-ct-web";
 import { getBrowserValue, setBrowserAttribute } from "../helpers";
-import { Indicator } from "indicator/indicator";
+import { Indicator } from "../../components/indicator/indicator";
 import { Spectrogram } from "../../components/spectrogram/spectrogram";
 
 class TestPage {
@@ -17,7 +17,7 @@ class TestPage {
         <oe-spectrogram
           id="spectrogram"
           style="width: 200px; height: 200px;"
-          src="/example.flac"
+          src="http://127.0.0.1/example.flac"
         ></oe-spectrogram>
       </oe-indicator>
       <oe-media-controls for="spectrogram"></oe-media-controls>

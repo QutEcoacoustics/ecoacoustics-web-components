@@ -1,5 +1,5 @@
 import { expect } from "@sand4rt/experimental-ct-web";
-import { mediaControlsFixture as test } from "./mediaControls.fixture";
+import { mediaControlsFixture as test } from "./media-controls.fixture";
 
 test.describe("audio element communication", () => {
   test.beforeEach(async ({ fixture }) => {

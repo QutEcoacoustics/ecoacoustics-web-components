@@ -10,7 +10,7 @@ class SingleSpectrogramFixture {
   public spectrogramAudioElement = this.page.locator("oe-spectrogram audio").first();
   public mediaControls = this.page.locator("oe-media-controls").first();
   public mediaControlsActionButton = this.page.locator("oe-media-controls #action-button").first();
-  public audioSource = "/example.flac";
+  public audioSource = "http://127.0.0.1/public/example.flac";
 
   public async create() {
     await this.page.setContent(`
@@ -30,6 +30,8 @@ class SingleSpectrogramFixture {
   public async isPlayingAudio(): Promise<boolean> {
     const hasDocumentAttribute = !(await hasBrowserAttribute<Spectrogram>(this.spectrogram, "paused"));
     const hasObjectProperty = !(await getBrowserValue<HTMLAudioElement>(this.spectrogramAudioElement, "paused"));
+
+    console.log(hasDocumentAttribute, hasObjectProperty);
 
     return hasDocumentAttribute && hasObjectProperty;
   }

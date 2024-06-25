@@ -1,17 +1,17 @@
 import { expect, test } from "@sand4rt/experimental-ct-web";
-import { singleSpectrogramFixture } from "./singleSpectrogram.fixture";
+import { singleSpectrogramFixture } from "./single-spectrogram.fixture";
 import { Spectrogram } from "./spectrogram";
-import { invokeBrowserMethod } from "../../tests/helpers";
+import { invokeBrowserMethod, setBrowserAttribute } from "../../tests/helpers";
 
 test.describe("unit tests", () => {
   test("play/pause events", async ({ mount }) => {
     let outside: CustomEvent<boolean> | undefined;
     const component = await mount(Spectrogram, {
       props: {
-        src: "/example.flac",
+        src: "http://127.0.0.1:3000/example.flac",
       },
       on: {
-        play: (event) => {
+        play: (event: CustomEvent<boolean>) => {
           outside = event;
         },
       },
@@ -22,6 +22,30 @@ test.describe("unit tests", () => {
 
     await invokeBrowserMethod<Spectrogram>(component, "pause");
     expect(outside).toBe(false);
+  });
+
+  test("loading events", async ({ mount }) => {
+    let loadingEvent: CustomEvent | undefined;
+    let loadedEvent: CustomEvent | undefined;
+
+    const component = await mount(Spectrogram, {
+      props: {
+        src: "http://127.0.0.1:3000/example.flac",
+      },
+      on: {
+        loading: (event) => {
+          loadingEvent = event;
+        },
+        loaded: (event) => {
+          loadedEvent = event;
+        },
+      },
+    });
+
+    await setBrowserAttribute<Spectrogram>(component, "src", "/example2.flac");
+
+    expect(loadingEvent).toBeDefined();
+    expect(loadedEvent).toBeDefined();
   });
 });
 

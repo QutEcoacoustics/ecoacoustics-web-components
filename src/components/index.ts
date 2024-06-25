@@ -20,4 +20,3 @@ export * from "./verification-grid/help-dialog";
 // import "@shoelace-style/shoelace/dist/components/dropdown/dropdown.js";
 // import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace";
-import "@shoelace-style/shoelace/dist/themes/light.css";
