@@ -1,13 +1,13 @@
 import { Page } from "@playwright/test";
 import { test } from "@sand4rt/experimental-ct-web";
-import { getBrowserValue, setBrowserAttribute } from "../helpers";
-import { Indicator } from "../../components/indicator/indicator";
+import { setBrowserAttribute } from "../helpers";
 import { Spectrogram } from "../../components/spectrogram/spectrogram";
 
 class TestPage {
   public constructor(public readonly page: Page) {}
 
   public indicatorComponent = () => this.page.locator("oe-indicator").first();
+  public indicatorLine = () => this.page.locator("oe-indicator #indicator-line").first();
   public spectrogramComponent = () => this.page.locator("oe-spectrogram").first();
   public mediaControlsActionButton = () => this.page.locator("oe-media-controls #action-button").first();
 
@@ -17,7 +17,7 @@ class TestPage {
         <oe-spectrogram
           id="spectrogram"
           style="width: 200px; height: 200px;"
-          src="http://127.0.0.1/example.flac"
+          src="http://localhost:3000/example.flac"
         ></oe-spectrogram>
       </oe-indicator>
       <oe-media-controls for="spectrogram"></oe-media-controls>
@@ -36,7 +36,11 @@ class TestPage {
   }
 
   public async indicatorPosition(): Promise<number> {
-    return (await getBrowserValue<Indicator>(this.indicatorComponent(), "xPos")) as number;
+    return await this.indicatorLine().evaluate((element: SVGLineElement) => {
+      const styles = window.getComputedStyle(element);
+      const transformX = styles.transform.match(/translateX\(([^)]+)\)/);
+      return transformX ? parseFloat(transformX[1]) : 0;
+    });
   }
 
   public async toggleAudio() {

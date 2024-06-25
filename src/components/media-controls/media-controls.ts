@@ -76,7 +76,7 @@ export class MediaControls extends AbstractComponent(LitElement) {
   public toggleAudio(): void {
     // if the media controls element is not bound to a spectrogram element, do nothing
     if (!this.spectrogramElement) {
-      return;
+      throw new Error("No spectrogram element found");
     }
 
     if (this.isSpectrogramPlaying()) {

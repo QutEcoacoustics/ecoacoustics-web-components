@@ -14,8 +14,8 @@
     "build:components": "vite build && tsc",
     "publish:components": "pnpm build:components && npm publish --access public",
     "test": "pnpm test:unit; pnpm test:e2e",
-    "test:unit": "playwright test components/",
-    "test:e2e": "playwright test tests/",
+    "test:unit": "pnpm build:components && playwright test components/",
+    "test:e2e": "pnpm build:components && playwright test tests/",
     "lint": "eslint ."
   },
   "files": [

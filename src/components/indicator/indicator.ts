@@ -38,7 +38,6 @@ export class Indicator extends AbstractComponent(LitElement) {
 
         const time = this.spectrogram.currentTime;
         const scale = this.unitConverter.scaleX.value;
-        console.log("new time", time.value);
         return scale(time.value);
       });
     }

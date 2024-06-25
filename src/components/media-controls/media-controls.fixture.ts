@@ -15,7 +15,7 @@ class TestPage {
     await this.page.setContent(`
         <oe-spectrogram
           id="spectrogram"
-          src="http://127.0.0.1:3000/example.flac"
+          src="http://localhost:3000/example.flac"
           style="display: relative; width: 100px; height: 100px;"
         ></oe-spectrogram>
         <oe-media-controls for="spectrogram">
@@ -43,7 +43,7 @@ class TestPage {
   }
 
   public async actionButtonSlotText(): Promise<(string | null)[]> {
-    const actionButtonSlotElement = this.page.locator("oe-media-controls button > slot").first();
+    const actionButtonSlotElement = this.actionButtonSlot();
     return await actionButtonSlotElement.evaluate((element: HTMLSlotElement) =>
       element.assignedElements().map((element) => element.textContent),
     );

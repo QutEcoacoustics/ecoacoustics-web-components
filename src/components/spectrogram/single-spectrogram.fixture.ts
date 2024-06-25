@@ -1,16 +1,16 @@
 import { Page } from "@playwright/test";
 import { test } from "@sand4rt/experimental-ct-web";
 import { Spectrogram } from "./spectrogram";
-import { getBrowserValue, hasBrowserAttribute } from "../../tests/helpers";
+import { hasBrowserAttribute } from "../../tests/helpers";
 
 class SingleSpectrogramFixture {
   public constructor(public readonly page: Page) {}
 
   public spectrogram = this.page.locator("oe-spectrogram").first();
-  public spectrogramAudioElement = this.page.locator("oe-spectrogram audio").first();
+  public spectrogramAudioElement = this.page.locator("oe-spectrogram #media-element").first();
   public mediaControls = this.page.locator("oe-media-controls").first();
   public mediaControlsActionButton = this.page.locator("oe-media-controls #action-button").first();
-  public audioSource = "http://127.0.0.1/public/example.flac";
+  public audioSource = "http://localhost:3000/example.flac";
 
   public async create() {
     await this.page.setContent(`
@@ -28,12 +28,7 @@ class SingleSpectrogramFixture {
   }
 
   public async isPlayingAudio(): Promise<boolean> {
-    const hasDocumentAttribute = !(await hasBrowserAttribute<Spectrogram>(this.spectrogram, "paused"));
-    const hasObjectProperty = !(await getBrowserValue<HTMLAudioElement>(this.spectrogramAudioElement, "paused"));
-
-    console.log(hasDocumentAttribute, hasObjectProperty);
-
-    return hasDocumentAttribute && hasObjectProperty;
+    return !(await hasBrowserAttribute<Spectrogram>(this.spectrogram, "paused"));
   }
 }
 

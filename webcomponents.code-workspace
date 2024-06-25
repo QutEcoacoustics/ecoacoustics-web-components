@@ -53,6 +53,7 @@
       "ecosounds",
       "currentcolor",
       "spacebar",
+      "crossorigin",
 
       // windowing functions
       "tukey",

@@ -12,7 +12,7 @@ class MultipleSpectrogramFixture {
   public componentTwoAudioElement = this.page.locator("#second audio").first();
   public mediaControls = this.page.locator("oe-media-controls").first();
   public mediaControlsActionButton = this.page.locator("oe-media-controls #action-button").first();
-  private audioSource = "http://127.0.0.1/example.flac";
+  private audioSource = "http://localhost:3000/example.flac";
 
   public async create() {
     await this.page.setContent(`

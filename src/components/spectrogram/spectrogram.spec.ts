@@ -1,14 +1,14 @@
 import { expect, test } from "@sand4rt/experimental-ct-web";
 import { singleSpectrogramFixture } from "./single-spectrogram.fixture";
-import { Spectrogram } from "./spectrogram";
 import { invokeBrowserMethod, setBrowserAttribute } from "../../tests/helpers";
+import { Spectrogram } from "./spectrogram";
 
 test.describe("unit tests", () => {
   test("play/pause events", async ({ mount }) => {
     let outside: CustomEvent<boolean> | undefined;
     const component = await mount(Spectrogram, {
       props: {
-        src: "http://127.0.0.1:3000/example.flac",
+        src: "http://localhost:3000/example.flac",
       },
       on: {
         play: (event: CustomEvent<boolean>) => {
@@ -30,7 +30,7 @@ test.describe("unit tests", () => {
 
     const component = await mount(Spectrogram, {
       props: {
-        src: "http://127.0.0.1:3000/example.flac",
+        src: "http://localhost:3000/example.flac",
       },
       on: {
         loading: (event) => {

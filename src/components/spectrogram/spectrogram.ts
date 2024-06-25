@@ -456,7 +456,6 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
         return;
       }
 
-      console.log("high res delta", highResolutionDelta, mediaElementTime, newProposedTime);
       this.currentTime.value = mediaElementTime + highResolutionDelta;
 
       this.nextRequestId = requestAnimationFrame(() =>
@@ -466,7 +465,7 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
   }
 
   private setPlaying(): void {
-    if (this.paused == this.mediaElement?.paused) return;
+    if (this.paused == this.mediaElement.paused) return;
 
     if (this.paused) {
       // TODO: find out if we actually need this
@@ -480,9 +479,9 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
       // is updated
       this.playStartedAt = null;
 
-      this.mediaElement?.pause();
+      this.mediaElement.pause();
     } else {
-      this.mediaElement?.play();
+      this.mediaElement.play();
       this.updateCurrentTime(true);
     }
 
@@ -515,13 +514,7 @@ export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
       <div id="spectrogram-container">
         <canvas></canvas>
       </div>
-      <audio
-        id="media-element"
-        src="${this.src}"
-        @ended="${this.pause}"
-        preload="metadata"
-        crossorigin="use-credentials"
-      >
+      <audio id="media-element" src="${this.src}" @ended="${this.pause}" preload="metadata" crossorigin="anonymous">
         <slot @slotchange="${this.handleSlotChange}"></slot>
       </audio>
     `;

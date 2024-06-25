@@ -60,7 +60,7 @@ test.describe("oe-indicator interaction with spectrogram and media controls", ()
     // when there is no audio playing, then jump back to the beginning when
     // the audio starts playing.
     // this test will fail if the indicator moves before the audio starts playing
-    test("playing audio after sleep", async ({ fixture }) => {
+    test("playing audio after sleep", async () => {
       // noop
     });
   });
