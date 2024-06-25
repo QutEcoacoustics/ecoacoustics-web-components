@@ -1,5 +1,5 @@
 import { multipleSpectrogramFixture as test } from "./spectrogram-media-controls.e2e.fixture";
-import { MediaControls } from "../../components/mediaControls/mediaControls";
+import { MediaControls } from "../../components/media-controls/media-controls";
 import { expect } from "@sand4rt/experimental-ct-web";
 import { setBrowserValue } from "../helpers";
 

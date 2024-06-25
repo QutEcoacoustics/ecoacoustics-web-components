@@ -1,6 +1,6 @@
-import { html, LitElement, nothing, svg } from "lit";
+import { html, LitElement, nothing, svg, unsafeCSS } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { axesStyles } from "./css/style";
+import axesStyles from "./css/style.css?inline";
 import { SignalWatcher } from "@lit-labs/preact-signals";
 import { Spectrogram } from "../../../playwright";
 import { AbstractComponent } from "../../mixins/abstractComponent";
@@ -17,7 +17,6 @@ import {
 import { booleanConverter } from "../../helpers/attributes";
 import { queryDeeplyAssignedElement } from "../../helpers/decorators";
 import { Size } from "../../models/rendering";
-import { theming } from "../../helpers/themes/theming";
 
 /**
  * X and Y axis grid lines showing duration and frequency of a spectrogram
@@ -58,7 +57,7 @@ import { theming } from "../../helpers/themes/theming";
  */
 @customElement("oe-axes")
 export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
-  public static styles = [theming, axesStyles];
+  public static styles = unsafeCSS(axesStyles);
 
   @property({ attribute: "x-step", type: Number, reflect: true })
   public xStepOverride: Seconds | undefined;

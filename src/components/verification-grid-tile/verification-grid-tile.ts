@@ -1,10 +1,10 @@
 import { customElement, property, state } from "lit/decorators.js";
 import { AbstractComponent } from "../../mixins/abstractComponent";
-import { html, LitElement, TemplateResult } from "lit";
+import { html, LitElement, TemplateResult, unsafeCSS } from "lit";
 import { Spectrogram } from "../spectrogram/spectrogram";
 import { queryDeeplyAssignedElement } from "../../helpers/decorators";
 import { classMap } from "lit/directives/class-map.js";
-import { verificationGridTileStyles } from "./css/style";
+import verificationGridTileStyles from "./css/style.css?inline";
 import { Verification } from "../../models/verification";
 import { createContext, provide } from "@lit/context";
 
@@ -41,7 +41,7 @@ export const gridTileContext = createContext<Verification>("grid-tile-context");
  */
 @customElement("oe-verification-grid-tile")
 export class VerificationGridTile extends AbstractComponent(LitElement) {
-  public static styles = verificationGridTileStyles;
+  public static styles = unsafeCSS(verificationGridTileStyles);
 
   // there is a difference between @state and @property({ attribute: false })
   // see more here: https://stackoverflow.com/a/70343809

@@ -1,7 +1,7 @@
-import { html, LitElement, nothing } from "lit";
+import { html, LitElement, nothing, unsafeCSS } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { AbstractComponent } from "../../mixins/abstractComponent";
-import { decisionStyles } from "./css/style";
+import decisionStyles from "./css/style.css?inline";
 import { classMap } from "lit/directives/class-map.js";
 import { SelectionObserverType } from "../verification-grid/verification-grid";
 import { booleanConverter } from "../../helpers/attributes";
@@ -20,7 +20,7 @@ import { booleanConverter } from "../../helpers/attributes";
  */
 @customElement("oe-decision")
 export class Decision extends AbstractComponent(LitElement) {
-  public static styles = decisionStyles;
+  public static styles = unsafeCSS(decisionStyles);
 
   @property({ type: Boolean, reflect: true, converter: booleanConverter })
   public verified: boolean | undefined;

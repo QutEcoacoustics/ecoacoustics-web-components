@@ -1,7 +1,7 @@
 import { customElement, property, query, queryAll, state } from "lit/decorators.js";
 import { AbstractComponent } from "../../mixins/abstractComponent";
-import { html, LitElement, PropertyValueMap, TemplateResult } from "lit";
-import { verificationGridStyles } from "./css/style";
+import { html, LitElement, PropertyValueMap, TemplateResult, unsafeCSS } from "lit";
+import verificationGridStyles from "./css/style.css?inline";
 import { queryAllDeeplyAssignedElements, queryDeeplyAssignedElement } from "../../helpers/decorators";
 import { Verification, VerificationSubject } from "../../models/verification";
 import { VerificationGridTile } from "../verification-grid-tile/verification-grid-tile";
@@ -75,7 +75,7 @@ interface HighlightSelection {
  */
 @customElement("oe-verification-grid")
 export class VerificationGrid extends AbstractComponent(LitElement) {
-  public static styles = verificationGridStyles;
+  public static styles = unsafeCSS(verificationGridStyles);
 
   @property({ attribute: "grid-size", type: Number, reflect: true })
   public gridSize = 8;

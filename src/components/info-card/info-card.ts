@@ -1,7 +1,7 @@
 import { customElement, property, state } from "lit/decorators.js";
 import { AbstractComponent } from "../../mixins/abstractComponent";
-import { html, LitElement, nothing, TemplateResult } from "lit";
-import { infoCardStyle } from "./css/style";
+import { html, LitElement, nothing, TemplateResult, unsafeCSS } from "lit";
+import infoCardStyle from "./css/style.css?inline";
 import { consume } from "@lit/context";
 import { gridTileContext } from "../verification-grid-tile/verification-grid-tile";
 import { Verification, VerificationSubject } from "../../models/verification";
@@ -10,7 +10,7 @@ type InfoCardTemplate = (value: any) => any;
 
 @customElement("oe-info-card")
 export class InfoCard extends AbstractComponent(LitElement) {
-  public static styles = infoCardStyle;
+  public static styles = unsafeCSS(infoCardStyle);
 
   @consume({ context: gridTileContext, subscribe: true })
   @property({ attribute: false })

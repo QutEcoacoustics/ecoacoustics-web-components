@@ -1,8 +1,8 @@
 import { customElement, property, query, state } from "lit/decorators.js";
 import { AbstractComponent } from "../../mixins/abstractComponent";
-import { html, LitElement, nothing, PropertyValues, TemplateResult } from "lit";
+import { html, LitElement, nothing, PropertyValues, TemplateResult, unsafeCSS } from "lit";
 import { PageFetcher, VerificationGrid } from "../verification-grid/verification-grid";
-import { dataSourceStyles } from "./css/style";
+import dataSourceStyles from "./css/style.css?inline";
 import { booleanConverter } from "../../helpers/attributes";
 import csv from "csvtojson";
 
@@ -12,7 +12,7 @@ type Char = string;
 // TODO: this entire component needs to be refactored
 @customElement("oe-data-source")
 export class DataSource extends AbstractComponent(LitElement) {
-  public static styles = dataSourceStyles;
+  public static styles = unsafeCSS(dataSourceStyles);
 
   @property({ type: String })
   public src: string | undefined;

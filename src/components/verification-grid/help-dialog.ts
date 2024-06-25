@@ -1,8 +1,8 @@
 import { customElement, property, query, state } from "lit/decorators.js";
 import { AbstractComponent } from "../../mixins/abstractComponent";
-import { html, LitElement, nothing, TemplateResult } from "lit";
+import { html, LitElement, nothing, TemplateResult, unsafeCSS } from "lit";
 import { Decision } from "../decision/decision";
-import { helpDialogStyles } from "./css/help-dialog-styles";
+import helpDialogStyles from "./css/help-dialog-styles.css?inline";
 import { SelectionObserverType } from "./verification-grid";
 
 interface KeyboardShortcut {
@@ -14,7 +14,7 @@ const helpPreferenceLocalStorageKey = "oe-verification-grid-dialog-preferences";
 
 @customElement("oe-verification-help-dialog")
 export class VerificationHelpDialog extends AbstractComponent(LitElement) {
-  static styles = helpDialogStyles;
+  static styles = unsafeCSS(helpDialogStyles);
 
   @property({ type: Array })
   public decisionElements!: Decision[];

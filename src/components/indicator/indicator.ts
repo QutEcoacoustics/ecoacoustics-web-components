@@ -1,8 +1,8 @@
 import { computed, ReadonlySignal, watch } from "@lit-labs/preact-signals";
-import { html, LitElement } from "lit";
+import { html, LitElement, unsafeCSS } from "lit";
 import { customElement } from "lit/decorators.js";
 import { AbstractComponent } from "../../mixins/abstractComponent";
-import { indicatorStyles } from "./css/style";
+import indicatorStyles from "./css/style.css?inline";
 import { Spectrogram } from "../spectrogram/spectrogram";
 import { UnitConverter } from "../../models/unitConverters";
 import { queryDeeplyAssignedElement } from "../../helpers/decorators";
@@ -17,7 +17,7 @@ import { queryDeeplyAssignedElement } from "../../helpers/decorators";
  */
 @customElement("oe-indicator")
 export class Indicator extends AbstractComponent(LitElement) {
-  public static styles = indicatorStyles;
+  public static styles = unsafeCSS(indicatorStyles);
 
   @queryDeeplyAssignedElement({ selector: "oe-spectrogram" })
   private spectrogram: Spectrogram | undefined;

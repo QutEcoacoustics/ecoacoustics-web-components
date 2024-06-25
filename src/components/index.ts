@@ -3,7 +3,7 @@
 import "../polyfills/polyfills";
 
 // oe web components barrel file
-export * from "./mediaControls/mediaControls";
+export * from "./media-controls/media-controls";
 export * from "./spectrogram/spectrogram";
 export * from "./indicator/indicator";
 export * from "./logger/logger";

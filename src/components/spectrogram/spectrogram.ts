@@ -1,6 +1,6 @@
-import { LitElement, PropertyValues, html } from "lit";
+import { LitElement, PropertyValues, html, unsafeCSS } from "lit";
 import { customElement, property, query, queryAssignedElements } from "lit/decorators.js";
-import { spectrogramStyles } from "./css/style";
+import spectrogramStyles from "./css/style.css?inline";
 import { computed, signal, Signal, SignalWatcher } from "@lit-labs/preact-signals";
 import { RenderCanvasSize, RenderWindow, Size, TwoDSlice } from "../../models/rendering";
 import { AudioModel } from "../../models/recordings";
@@ -50,7 +50,7 @@ const defaultAudioModel = new AudioModel({
  */
 @customElement("oe-spectrogram")
 export class Spectrogram extends SignalWatcher(AbstractComponent(LitElement)) {
-  public static styles = spectrogramStyles;
+  public static styles = unsafeCSS(spectrogramStyles);
 
   // must be in the format window="startOffset, lowFrequency, endOffset, highFrequency"
   @property({ type: String, attribute: "window", reflect: true })

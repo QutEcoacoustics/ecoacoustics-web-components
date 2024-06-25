@@ -1,6 +1,6 @@
-import { LitElement, PropertyValues, TemplateResult, html } from "lit";
+import { LitElement, PropertyValues, TemplateResult, html, unsafeCSS } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { mediaControlsStyles } from "./css/style";
+import mediaControlsStyles from "./css/style.css?inline";
 import { ILogger, rootContext } from "../logger/logger";
 import { provide } from "@lit/context";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
@@ -49,7 +49,7 @@ type PreferenceLocation = "default" | "toolbar" | "overflow" | "hidden";
  */
 @customElement("oe-media-controls")
 export class MediaControls extends AbstractComponent(LitElement) {
-  public static styles = mediaControlsStyles;
+  public static styles = unsafeCSS(mediaControlsStyles);
 
   @property({ type: String })
   public for = "";
