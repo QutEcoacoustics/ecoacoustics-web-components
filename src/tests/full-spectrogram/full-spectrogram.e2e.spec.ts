@@ -1,4 +1,4 @@
-import { fullFixture as test } from "./full.fixture";
+import { fullFixture as test } from "./full-spectrogram.e2e.fixture";
 
 test.describe("interactions between all components", () => {
   test.beforeEach(async ({ fixture }) => {
@@ -54,7 +54,7 @@ test.describe("changing components", () => {
     await fixture.create();
   });
 
-  test("changing spectrogram element", async () => { });
+  test("changing spectrogram element", async () => {});
 });
 
 // the elements should work together correctly, but most functionality should

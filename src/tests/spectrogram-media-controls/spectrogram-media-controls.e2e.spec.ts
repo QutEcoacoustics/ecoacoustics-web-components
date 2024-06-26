@@ -63,3 +63,7 @@ test.describe("multiple spectrograms with the same ids", () => {
     expect(await fixture.isPlayingAudio(fixture.spectrogramTwo)).toBe(false);
   });
 });
+
+test.describe("Changing spectrogram options with media controls", () => {});
+
+test.describe("Changing an axes without a spectrogram", () => {});

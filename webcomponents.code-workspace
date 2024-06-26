@@ -54,6 +54,8 @@
       "currentcolor",
       "spacebar",
       "crossorigin",
+      "gridlines",
+      "networkidle",
 
       // windowing functions
       "tukey",

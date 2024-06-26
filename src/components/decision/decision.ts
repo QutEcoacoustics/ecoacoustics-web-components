@@ -5,13 +5,7 @@ import decisionStyles from "./css/style.css?inline";
 import { classMap } from "lit/directives/class-map.js";
 import { SelectionObserverType } from "../verification-grid/verification-grid";
 import { booleanConverter } from "../../helpers/attributes";
-
-export enum VerificationDecision {
-  FALSE = "false",
-  TRUE = "true",
-  UNSURE = "unsure",
-  SKIP = "skip",
-}
+import { VerificationDecision } from "../../models/verification";
 
 /**
  * A decision that can be made either with keyboard shortcuts or by clicking
@@ -137,11 +131,6 @@ export class Decision extends AbstractComponent(LitElement) {
     }
     this.shouldEmitNext = true;
 
-    // TODO: The additional tags are broken
-    // when we are making decisions for with multiple classes, we emit
-    // the OE Verification model for every tag option
-    // the same logic should be used for a single tag, but it should only emit
-    // one tag (because there is only one tag)
     const additionalTags = this.additionalTags?.split(",").map((tag) => tag.trim()) ?? [];
 
     // I focus on the button clicked with keyboard shortcuts

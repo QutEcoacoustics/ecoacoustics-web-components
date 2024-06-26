@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { indicatorSpectrogramMediaControlsFixture as test } from "./indicator-spectrogram-mediacontrols.fixture";
+import { indicatorSpectrogramMediaControlsFixture as test } from "./indicator-spectrogram-mediacontrols.e2e.fixture";
 
 test.describe("oe-indicator interaction with spectrogram and media controls", () => {
   test.beforeEach(async ({ fixture }) => {

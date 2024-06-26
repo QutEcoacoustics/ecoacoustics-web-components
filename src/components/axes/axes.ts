@@ -187,13 +187,14 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
 
       return svg`<g>
         <line
+          part="x-tick"
           x1="${this.unitConverter.scaleX.value(value)}"
           x2="${this.unitConverter.scaleX.value(value)}"
           y1="${canvasSize.height}"
           y2="${canvasSize.height + this.tickSize}"
         ></line>
         <text
-          part="label x-label"
+          part="x-label"
           text-anchor="middle"
           dominant-baseline="end"
           x="${xPos}"
@@ -210,13 +211,14 @@ export class Axes extends SignalWatcher(AbstractComponent(LitElement)) {
 
       return svg`<g>
         <line
+          part="y-tick"
           x1="${xPos}"
           x2="${xPos + this.tickSize}"
           y1="${this.unitConverter.scaleY.value(value)}"
           y2="${this.unitConverter.scaleY.value(value)}"
         ></line>
         <text
-          part="label y-label"
+          part="y-label"
           text-anchor="end"
           dominant-baseline="middle"
           x="${xPos - this.labelPadding}"

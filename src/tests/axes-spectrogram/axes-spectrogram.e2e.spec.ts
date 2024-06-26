@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { axesSpectrogramFixture as test } from "./axes-spectrogram.fixture";
+import { axesSpectrogramFixture as test } from "./axes-spectrogram.e2e.fixture";
 import { setBrowserAttribute } from "../helpers";
 import { Spectrogram } from "../../components/spectrogram/spectrogram";
 
@@ -7,6 +7,94 @@ test.describe("interactions between axes and spectrogram", () => {
   test.beforeEach(async ({ fixture }) => {
     await fixture.create();
   });
+
+  test.describe("axis step for different size spectrograms", () => {
+    interface SpectrogramSizeTest {
+      spectrogramSize: { width: number; height: number };
+      expectedXStep: number;
+      expectedYStep: number;
+      expectedXTickCount: number;
+      expectedYTickCount: number;
+    }
+
+    const testCases: SpectrogramSizeTest[] = [
+      {
+        spectrogramSize: { width: 1000, height: 1000 },
+        expectedXStep: 0.2,
+        expectedYStep: 0.5,
+        expectedXTickCount: 6,
+        expectedYTickCount: 11,
+      },
+      {
+        spectrogramSize: { width: 500, height: 500 },
+        expectedXStep: 0.5,
+        expectedYStep: 1,
+        expectedXTickCount: 12,
+        expectedYTickCount: 11,
+      },
+      {
+        spectrogramSize: { width: 1000, height: 500 },
+        expectedXStep: 0.2,
+        expectedYStep: 1,
+        expectedXTickCount: 6,
+        expectedYTickCount: 11,
+      },
+      {
+        spectrogramSize: { width: 500, height: 1000 },
+        expectedXStep: 0.5,
+        expectedYStep: 0.5,
+        expectedXTickCount: 6,
+        expectedYTickCount: 11,
+      },
+      {
+        spectrogramSize: { width: 100, height: 100 },
+        expectedXStep: 1,
+        expectedYStep: 5,
+        expectedXTickCount: 11,
+        expectedYTickCount: 11,
+      },
+    ];
+
+    testCases.forEach((testCase) => {
+      const humanizedSize = `${testCase.spectrogramSize.width} x ${testCase.spectrogramSize.height}`;
+
+      test(`x-axis step for size ${humanizedSize}`, async ({ fixture }) => {
+        await fixture.changeSize(testCase.spectrogramSize);
+
+        const expectedXStep = testCase.expectedXStep;
+        const realizedXStep = await fixture.xAxisStep();
+        await expect(realizedXStep).toBe(expectedXStep);
+      });
+
+      test(`y-axis step for size ${humanizedSize}`, async ({ fixture }) => {
+        await fixture.changeSize(testCase.spectrogramSize);
+
+        const expectedYStep = testCase.expectedYStep;
+        const realizedYStep = await fixture.yAxisStep();
+        await expect(realizedYStep).toBe(expectedYStep);
+      });
+
+      test(`x-axis tick count for size ${humanizedSize}`, async ({ fixture }) => {
+        await fixture.changeSize(testCase.spectrogramSize);
+
+        const expectedXTickCount = testCase.expectedXTickCount;
+        const xAxisTicks = await fixture.xAxisTicks();
+        const realizedXTickCount = await xAxisTicks.length;
+        await expect(realizedXTickCount).toBe(expectedXTickCount);
+      });
+
+      test(`y-axis tick count for size ${humanizedSize}`, async ({ fixture }) => {
+        await fixture.changeSize(testCase.spectrogramSize);
+
+        const expectedYTickCount = testCase.expectedYTickCount;
+        const yAxisTicks = await fixture.yAxisTicks();
+        const realizedYTickCount = await yAxisTicks.length;
+        await expect(realizedYTickCount).toBe(expectedYTickCount);
+      });
+    });
+  });
+
+  test.describe("different spectrogram stretching attributes", () => {});
 
   test.describe("5 second recording", () => {
     // because the example audio recording that we are testing against is 5 seconds
@@ -60,7 +148,7 @@ test.describe("interactions between axes and spectrogram", () => {
     test("changing the offset after creation should change the x-axis correctly", async ({ fixture }) => {
       const expectedFirstTickValue = "2.0";
       const expectedLastTickValue = "7.0";
-      
+
       await setBrowserAttribute<Spectrogram>(fixture.spectrogramComponent(), "offset", "2");
 
       const xAxisLabels = await fixture.xAxisLabels();

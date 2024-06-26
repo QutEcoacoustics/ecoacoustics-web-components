@@ -3,7 +3,7 @@ import { AbstractComponent } from "../../mixins/abstractComponent";
 import { html, LitElement, PropertyValueMap, TemplateResult, unsafeCSS } from "lit";
 import verificationGridStyles from "./css/style.css?inline";
 import { queryAllDeeplyAssignedElements, queryDeeplyAssignedElement } from "../../helpers/decorators";
-import { Verification, VerificationSubject } from "../../models/verification";
+import { Verification, VerificationDecision, VerificationSubject } from "../../models/verification";
 import { VerificationGridTile } from "../verification-grid-tile/verification-grid-tile";
 import { Decision } from "../decision/decision";
 import { Parser } from "@json2csv/plainjs";
@@ -20,7 +20,7 @@ import { classMap } from "lit/directives/class-map.js";
 export type SelectionObserverType = "desktop" | "tablet" | "default";
 export type PageFetcher = (elapsedItems: number) => Promise<VerificationSubject[]>;
 export type DecisionEvent = CustomEvent<{
-  value: boolean;
+  value: VerificationDecision;
   tag: string;
   additionalTags: string[];
   color: string;
@@ -550,13 +550,42 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     this.renderVirtualPage(pageToRender);
   }
 
+  // because a single decision/verification can be made about multiple tags
+  // and additional tags (e.g. the "negative" button means that all the tags and
+  // additional tags are not present in the audio event)
+  // in this case, the decision that we would have captured would have tags = *
+  // this means that the verification decision should apply to all tags
+  // and we should therefore, expand the verification models to include all tags
+  // in some situations such as downloading the results
+  private expandVerificationModels(models: Verification[]): Verification[] {
+    const result: Verification[] = [];
+    const possibleTags = Array.from(
+      new Set(this.decisionElements.map((model: Decision) => model.tag).filter((tag: any) => tag !== "*" && tag)),
+    );
+
+    for (const model of models) {
+      if (model.tag.text === "*") {
+        const modelsToAdd = possibleTags.map((tag: any) => {
+          return new Verification({
+            ...model,
+            tag: { id: undefined, text: tag },
+          });
+        });
+
+        result.push(...modelsToAdd);
+        continue;
+      }
+
+      result.push(model);
+    }
+
+    return result;
+  }
+
   private async catchDecision(event: DecisionEvent) {
-    const decision: boolean = event.detail.value;
-    const tags: any[] =
-      event.detail.tag === "*"
-        ? this.decisionElements.map((model: Decision) => model.tag).filter((tag: any) => tag !== "*")
-        : [event.detail.tag];
-    const additionalTags: any[] = event.detail.additionalTags;
+    const decision: VerificationDecision = event.detail.value;
+    const tag: string = event.detail.tag;
+    const additionalTags: string[] = event.detail.additionalTags;
 
     const gridTiles = Array.from(this.gridTiles);
     const subSelection = gridTiles.filter((tile) => tile.selected);
@@ -566,17 +595,15 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     const selectedItems = selectedTiles.map((tile) => tile.model);
     const value: Verification[] = [];
 
-    for (const tag of tags) {
-      for (const tile of selectedItems) {
-        value.push(
-          new Verification({
-            ...tile,
-            tag: { id: undefined, text: tag },
-            confirmed: decision,
-            additionalTags: additionalTags ?? [],
-          }),
-        );
-      }
+    for (const tile of selectedItems) {
+      value.push(
+        new Verification({
+          ...tile,
+          tag: { id: undefined, text: tag },
+          confirmed: decision,
+          additionalTags: additionalTags ?? [],
+        }),
+      );
     }
 
     // if the user created a sub-selection, then all the tiles that are not
@@ -600,7 +627,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
       decisionsToUpdate.forEach((historicalDecision: Verification) => {
         historicalDecision.confirmed = decision;
         historicalDecision.additionalTags = additionalTags;
-        historicalDecision.tag = { id: undefined, text: tags[0] };
+        historicalDecision.tag = { id: undefined, text: tag[0] };
       });
 
       // we have updated the decision about a tiles while viewing history
@@ -653,14 +680,15 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
   private decisionColor(verification: Verification): string {
     const tagToMatch = verification.tag.text;
-    const additionalTagsToMatch = verification.additionalTags.toString();
+    const additionalTagsToMatch =
+      verification.additionalTags.length > 0 ? verification.additionalTags.toString() : null;
     const verificationToMatch = verification.confirmed;
 
     const decisionButton = this.decisionElements.find((element: Decision) => {
       const tagMatches = element.tag === tagToMatch;
-      const verificationMatches = element.verified === verificationToMatch;
+      const verificationMatches = element.verificationDecision === verificationToMatch;
 
-      if (additionalTagsToMatch === "") {
+      if (additionalTagsToMatch === null) {
         return tagMatches && verificationMatches;
       }
 
@@ -690,7 +718,16 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
     this.removeDecisionButtonHighlight();
   }
 
-  private showDecisionButtonHighlight(elements: Decision[] = this.decisionElements): void {
+  private touchedDecisionElements(): Decision[] {
+    return this.decisionElements.filter((element: Decision) =>
+      this.decisions.some(
+        (decision: Verification) =>
+          decision.tag.text === element.tag && decision.confirmed === element.verificationDecision,
+      ),
+    );
+  }
+
+  private showDecisionButtonHighlight(elements: Decision[] = this.touchedDecisionElements()): void {
     for (const decision of elements) {
       decision.showDecisionColor = true;
     }
@@ -976,7 +1013,9 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
     let formattedResults = "";
     const fileFormat = this.dataSource?.fileType ?? "json";
-    const results = this.decisions.map((decision: Verification) => {
+
+    const expandedDecisions = this.expandVerificationModels(this.decisions);
+    const results = expandedDecisions.map((decision: Verification) => {
       const subject = decision.subject;
       const tag = decision.tag?.text ?? "";
       const confirmed = decision.confirmed;
@@ -1102,7 +1141,11 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
           <span class="decision-controls-right">
             <slot name="data-source"></slot>
-            <button @pointerdown="${this.downloadResults}" ?disabled="${!this.canDownloadResults()}" class="oe-btn-secondary">
+            <button
+              @pointerdown="${this.downloadResults}"
+              ?disabled="${!this.canDownloadResults()}"
+              class="oe-btn-secondary"
+            >
               Download Results
             </button>
           </span>

@@ -5,6 +5,13 @@ export interface Tag {
   text: string;
 }
 
+export enum VerificationDecision {
+  FALSE = "false",
+  TRUE = "true",
+  UNSURE = "unsure",
+  SKIP = "skip",
+}
+
 // the Verification model is emitted by the oe-verification-grid as a CustomEvent
 export class Verification {
   public constructor(data: Verification) {
@@ -21,7 +28,7 @@ export class Verification {
   public subject: VerificationSubject;
   public url: string;
   public tag: Tag;
-  public confirmed: boolean;
+  public confirmed: VerificationDecision;
   public additionalTags: string[];
 
   // other metadata e.g. verificationDate

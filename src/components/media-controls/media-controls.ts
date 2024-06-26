@@ -151,10 +151,13 @@ export class MediaControls extends AbstractComponent(LitElement) {
         ${text}
         <sl-menu @sl-select="${changeHandler}" slot="submenu">
           ${values.map(
-            (value) =>
-              html`<sl-menu-item type="checkbox" value="${value}" ?checked=${value == currentValue}>
-                ${value}
-              </sl-menu-item>`,
+            (value) => html`<sl-menu-item
+              type="${value == currentValue ? "checkbox" : "normal"}"
+              value="${value}"
+              ?checked=${value == currentValue}
+            >
+              ${value}
+            </sl-menu-item>`,
           )}
         </sl-menu>
       </sl-menu-item>
@@ -329,6 +332,8 @@ export class MediaControls extends AbstractComponent(LitElement) {
         ...oldOptions,
         colorMap: newValue,
       } as any;
+
+      this.requestUpdate();
     };
 
     const changeBrightnessHandler = (event: CustomEvent) => {
@@ -377,6 +382,8 @@ export class MediaControls extends AbstractComponent(LitElement) {
       "red",
     ];
 
+    const currentColor = this.spectrogramElement?.spectrogramOptions.colorMap ?? "grayscale";
+
     return html`
       <sl-dropdown title="Colour" hoist>
         <a slot="trigger">${unsafeSVG(lucidePalletteIcon)}</a>
@@ -384,9 +391,9 @@ export class MediaControls extends AbstractComponent(LitElement) {
           ${colorValues.map(
             (value) =>
               html`<sl-menu-item
-                type="checkbox"
                 value="${value}"
-                ?checked="${this.spectrogramElement?.spectrogramOptions.colorMap === value}"
+                type="${value == currentColor ? "checkbox" : "normal"}"
+                ?checked="${value == currentColor}"
               >
                 ${value}
               </sl-menu-item>`,
