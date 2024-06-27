@@ -99,6 +99,7 @@
       "pushqrdx.inline-html",
       "hediet.vscode-drawio",
       "htmlhint.vscode-htmlhint",
+      "firefox-devtools.vscode-firefox-debug",
 
       // toml is used for netlify configs
       "tamasfe.even-better-toml"
@@ -112,6 +113,13 @@
         "command": "pnpm dev",
         "request": "launch",
         "type": "node-terminal"
+      },
+      {
+        "type": "firefox",
+        "request": "launch",
+        "name": "Launch Firefox",
+        "url": "http://localhost:5173",
+        "webRoot": "${workspaceFolder}"
       },
       {
         "name": "Lint",

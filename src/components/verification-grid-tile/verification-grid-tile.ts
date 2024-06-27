@@ -34,7 +34,7 @@ export const gridTileContext = createContext<Verification>("grid-tile-context");
  * @property src - The source of the spectrogram
  * @property selected - If the item is selected as part of a sub-selection
  * @property order - Used for shift selection
- * 
+ *
  * @fires Loaded
  *
  * @slot
@@ -65,7 +65,7 @@ export class VerificationGridTile extends AbstractComponent(LitElement) {
   public spectrogram: Spectrogram | undefined;
 
   public loaded = false;
-  private shortcuts: string[] = [];
+  public shortcuts: string[] = [];
   private keyDownHandler = this.handleKeyDown.bind(this);
   private keyUpHandler = this.handleKeyUp.bind(this);
   private loadingHandler = this.handleLoading.bind(this);
@@ -128,7 +128,7 @@ export class VerificationGridTile extends AbstractComponent(LitElement) {
 
     if (event.altKey && this.shortcuts.includes(event.key.toLowerCase())) {
       this.dispatchEvent(
-        new CustomEvent("selected", {
+        new CustomEvent(VerificationGridTile.selectedEventName, {
           bubbles: true,
           detail: {
             index: this.index,
@@ -168,7 +168,7 @@ export class VerificationGridTile extends AbstractComponent(LitElement) {
     }
 
     this.dispatchEvent(
-      new CustomEvent("selected", {
+      new CustomEvent(VerificationGridTile.selectedEventName, {
         bubbles: true,
         detail: {
           index: this.index,
@@ -199,6 +199,8 @@ export class VerificationGridTile extends AbstractComponent(LitElement) {
       </div>
     `;
   }
+
+  public static selectedEventName = "selected" as const;
 }
 
 declare global {

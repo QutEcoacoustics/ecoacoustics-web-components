@@ -163,10 +163,10 @@ export class DataSource extends AbstractComponent(LitElement) {
 
     return html`
       <div class="file-picker">
-        <button @pointerdown="${handleClick}" class="oe-btn-secondary">
+        <button class="file-input oe-btn-secondary" @pointerdown="${handleClick}">
           ${this.src ? `File: ${this.fileName ?? this.src}` : "Browse files"}
         </button>
-        <input @change="${this.handleFileChange}" type="file" accept=".csv,.json" class="hidden" />
+        <input class="browser-file-input hidden" @change="${this.handleFileChange}" type="file" accept=".csv,.json" />
       </div>
     `;
   }

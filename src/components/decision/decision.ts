@@ -44,20 +44,32 @@ export class Decision extends AbstractComponent(LitElement) {
   @property({ type: String })
   public color = "var(--oe-primary-color)";
 
-  @property({ type: Boolean })
-  public showDecisionColor = false;
-
   @property({ attribute: "additional-tags", type: String, reflect: true })
   public additionalTags: string | undefined;
 
   @property({ attribute: "disabled", type: Boolean, converter: booleanConverter, reflect: true })
   public disabled = false;
 
+  @property({ type: Boolean })
+  public get showDecisionColor(): boolean {
+    return this._showDecisionColor && !this.disabled;
+  }
+  public set showDecisionColor(value: boolean) {
+    if (this.disabled) {
+      return;
+    }
+
+    const oldValue = this._showDecisionColor;
+    this._showDecisionColor = value;
+    this.requestUpdate("showDecisionColor", oldValue);
+  }
+
   @query("#decision-button")
   private decisionButton!: HTMLButtonElement;
 
   @state()
   public selectionMode: SelectionObserverType = "desktop";
+  private _showDecisionColor = false;
 
   public get verificationDecision(): VerificationDecision {
     switch (true) {
@@ -102,7 +114,7 @@ export class Decision extends AbstractComponent(LitElement) {
 
   private handleKeyDown(event: KeyboardEvent): void {
     if (this.isShortcutKey(event)) {
-      this.showDecisionColor = true;
+      this.setShowDecisionColor(true);
     }
 
     // if the user is holding down escape while pressing a shortcut, we should
@@ -116,6 +128,14 @@ export class Decision extends AbstractComponent(LitElement) {
     }
   }
 
+  private setShowDecisionColor(value: boolean): void {
+    if (this.disabled) {
+      return;
+    }
+
+    this.showDecisionColor = value;
+  }
+
   private isShortcutKey(event: KeyboardEvent): boolean {
     if (this.shortcut === undefined) {
       return false;
@@ -125,7 +145,13 @@ export class Decision extends AbstractComponent(LitElement) {
   }
 
   private emitDecision(): void {
-    if (this.disabled || !this.shouldEmitNext) {
+    this.setShowDecisionColor(false);
+
+    if (this.disabled) {
+      return;
+    }
+
+    if (!this.shouldEmitNext) {
       this.shouldEmitNext = true;
       return;
     }
@@ -140,7 +166,7 @@ export class Decision extends AbstractComponent(LitElement) {
     this.decisionButton.focus();
 
     this.dispatchEvent(
-      new CustomEvent("decision", {
+      new CustomEvent(Decision.decisionEventName, {
         detail: {
           value: this.verificationDecision,
           tag: this.tag,
@@ -169,6 +195,7 @@ export class Decision extends AbstractComponent(LitElement) {
         part="decision-button"
         title="Shortcut: ${this.shortcut}"
         aria-disabled="${this.disabled}"
+        @pointerdown="${() => this.setShowDecisionColor(true)}"
         @pointerup="${this.emitDecision}"
       >
         <div class="tag-text"><slot></slot></div>
@@ -177,6 +204,8 @@ export class Decision extends AbstractComponent(LitElement) {
       </button>
     `;
   }
+
+  public static decisionEventName = "decision" as const;
 }
 
 declare global {

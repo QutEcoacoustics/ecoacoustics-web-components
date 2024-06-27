@@ -5,11 +5,41 @@ export async function insertHtml(page: Page, html: string) {
   await page.waitForLoadState("networkidle");
 }
 
-export async function catchEvent(page: Page, name: string) {
-  return page.evaluate((name: string) => {
+export async function getBrowserStyles<T extends HTMLElement>(component: Locator): Promise<CSSStyleDeclaration> {
+  return await component.evaluate((element: T) => {
+    return window.getComputedStyle(element);
+  });
+}
+
+export async function catchEvent(locator: Page, name: string) {
+  return locator.evaluate((name: string) => {
     return new Promise((resolve) => {
       document.addEventListener(name, (data) => resolve(data));
     });
+  }, name);
+}
+
+// TODO: Combine this with the catchEvent function
+export async function catchLocatorEvent(locator: Locator, name: string) {
+  return locator.evaluate((element: HTMLElement, name: string) => {
+    return new Promise((resolve) => {
+      element.addEventListener(name, (data) => resolve(data));
+    });
+  }, name);
+}
+
+export async function logEvent(page: Page, name: string) {
+  await page.evaluate((name) => {
+    const eventStoreKey = `oe-${name}-events`;
+    window[eventStoreKey] = [];
+    document.addEventListener(name, (data) => window[eventStoreKey].push(data));
+  }, name);
+}
+
+export async function getEventLogs(page: Page, name: string) {
+  return await page.evaluate((name) => {
+    const eventStoreKey = `oe-${name}-events`;
+    return window[eventStoreKey];
   }, name);
 }
 
