@@ -1103,11 +1103,17 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
 
         <div class="verification-controls">
           <span class="decision-controls-left">
-            <button @pointerdown="${() => this.helpDialog.showModal(false)}" class="oe-btn-info" rel="help">
+            <button
+              data-testid="help-dialog-button"
+              @pointerdown="${() => this.helpDialog.showModal(false)}"
+              class="oe-btn-info"
+              rel="help"
+            >
               ${unsafeSVG(lucideCircleHelp)}
             </button>
 
             <button
+              data-testid="previous-page-button"
               class="oe-btn oe-btn-secondary"
               ?disabled="${!this.canNavigatePrevious()}"
               @pointerdown="${() => this.previousPage()}"
@@ -1116,6 +1122,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
             </button>
 
             <button
+              data-testid="next-page-button"
               class="oe-btn-secondary ${classMap({ hidden: this.autoPage && !this.isViewingHistory() })}"
               ?disabled="${!this.canNavigateNext()}"
               @pointerdown="${() => this.handleNextPageClick()}"
@@ -1124,6 +1131,7 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
             </button>
 
             <button
+              data-testid="continue-verifying-button"
               class="oe-btn-secondary ${classMap({ hidden: !this.isViewingHistory() })}"
               ?disabled="${!this.isViewingHistory()}"
               @pointerdown="${() => this.resumeVerification()}"
@@ -1142,9 +1150,10 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
           <span class="decision-controls-right">
             <slot name="data-source"></slot>
             <button
+              data-testid="download-results-button"
+              class="oe-btn-secondary"
               @pointerdown="${this.downloadResults}"
               ?disabled="${!this.canDownloadResults()}"
-              class="oe-btn-secondary"
             >
               Download Results
             </button>

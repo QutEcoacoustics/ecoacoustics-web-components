@@ -72,13 +72,13 @@ export class InfoCard extends AbstractComponent(LitElement) {
   public render() {
     return html`
       <div class="card-container">
-        ${this.subjectTemplate(this.model?.subject)}
+        <div class="subject-content">${this.subjectTemplate(this.model?.subject)}</div>
 
         <hr />
 
         <div class="static-actions">
-          <a href="${this.model?.url ?? ""}" target="_blank" download>Download Recording</a>
-          <a @pointerdown="${() => (this.showExpanded = !this.showExpanded)}">
+          <a id="download-recording" href="${this.model?.url ?? ""}" target="_blank" download>Download Recording</a>
+          <a id="show-more" @pointerdown="${() => (this.showExpanded = !this.showExpanded)}">
             ${this.showExpanded ? "Show Less" : "Show More"}
           </a>
         </div>

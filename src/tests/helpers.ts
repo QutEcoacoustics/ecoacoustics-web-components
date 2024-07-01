@@ -1,4 +1,20 @@
 import type { Locator, Page } from "@playwright/test";
+import { Size } from "../models/rendering";
+
+export async function changeToMobile(page: Page) {
+  const mobileSize: Size = { width: 320, height: 568 };
+  await page.setViewportSize(mobileSize);
+}
+
+export async function changeToTablet(page: Page) {
+  const tabletSize: Size = { width: 768, height: 1024 };
+  await page.setViewportSize(tabletSize);
+}
+
+export async function changeToDesktop(page: Page) {
+  const desktopSize: Size = { width: 1920, height: 1080 };
+  await page.setViewportSize(desktopSize);
+}
 
 export async function insertHtml(page: Page, html: string) {
   await page.setContent(html);
