@@ -1,6 +1,6 @@
 import { Locator, Page } from "@playwright/test";
 import { test } from "@sand4rt/experimental-ct-web";
-import { getBrowserValue, setBrowserAttribute } from "../helpers";
+import { getBrowserAttribute, getBrowserValue, removeBrowserAttribute, setBrowserAttribute } from "../helpers";
 import { VerificationGrid } from "../../components/verification-grid/verification-grid";
 import { Size } from "../../models/rendering";
 import { DataSource, Indicator, VerificationGridTile } from "../../components";
@@ -11,20 +11,20 @@ class TestPage {
 
   public gridComponent = () => this.page.locator("oe-verification-grid").first();
   public dataSourceComponent = () => this.page.locator("oe-data-source").first();
-  public mediaControlsComponent = () => this.page.locator("oe-media-controls").first();
+  public mediaControlsComponent = () => this.page.locator("oe-media-controls").all();
   public gridTileComponents = () => this.page.locator("oe-verification-grid-tile").all();
   public indicatorComponents = () => this.page.locator("oe-indicator").all();
+  public infoCardComponents = () => this.page.locator("oe-info-card").all();
 
-  public mediaControlsActionButton = () => this.mediaControlsComponent().locator("#action-button").first();
   public decisionButtons = () => this.page.locator("oe-decision").all();
   public helpDialog = () => this.page.locator("oe-help-dialog").first();
   public openHelpDialogButton = () => this.page.locator("oe-help-button").first();
   public fileInputButton = () => this.page.locator(".file-input").first();
-  public helpDialogButton = () => this.page.getByTestId("help-dialog-button");
-  public nextPageButton = () => this.page.getByTestId("next-page-button");
-  public continueVerifyingButton = () => this.page.getByTestId("continue-verifying-button");
-  public previousPageButton = () => this.page.getByTestId("previous-page-button");
-  public downloadResultsButton = () => this.page.getByTestId("download-results-button");
+  public helpDialogButton = () => this.page.getByTestId("help-dialog-button").first();
+  public nextPageButton = () => this.page.getByTestId("next-page-button").first();
+  public continueVerifyingButton = () => this.page.getByTestId("continue-verifying-button").first();
+  public previousPageButton = () => this.page.getByTestId("previous-page-button").first();
+  public downloadResultsButton = () => this.page.getByTestId("download-results-button").first();
 
   public async create() {
     await this.page.setContent(`
@@ -57,6 +57,11 @@ class TestPage {
   public async getGridSize(): Promise<number> {
     const gridTiles = await this.gridTileComponents();
     return gridTiles.length;
+  }
+
+  public async getPagedItems(): Promise<number> {
+    const pagedItems = await getBrowserValue<VerificationGrid>(this.gridComponent(), "pagedItems");
+    return pagedItems as number;
   }
 
   public async tileSizes(): Promise<Size[]> {
@@ -102,8 +107,9 @@ class TestPage {
     return [];
   }
 
-  public async areMediaControlsPlaying(): Promise<boolean> {
-    const mediaControlsPlayButton = this.mediaControlsComponent().locator("[part='play-icon']").first();
+  public async areMediaControlsPlaying(index: number): Promise<boolean> {
+    const mediaControls = await this.mediaControlsComponent()[index];
+    const mediaControlsPlayButton = mediaControls.locator("[part='play-icon']").first();
     return mediaControlsPlayButton.isVisible();
   }
 
@@ -119,6 +125,25 @@ class TestPage {
     return positions;
   }
 
+  public async downloadResults(): Promise<string> {
+    const downloadButton = this.downloadResultsButton();
+    return getBrowserAttribute(downloadButton, "href");
+  }
+
+  public async infoCardItem(index: number): Promise<{ key: unknown; value: unknown }[]> {
+    const infoCard: Locator = this.infoCardComponents()[index];
+    const subjectContent = infoCard.locator(".subject-content");
+
+    return await subjectContent.evaluate((el) => {
+      return Array.from(el.children).map((child) => {
+        return {
+          key: child.querySelector(".subject-key")?.textContent,
+          value: child.querySelector(".subject-value")?.textContent,
+        };
+      });
+    });
+  }
+
   // actions
   public async nextPage() {
     await this.nextPageButton().click();
@@ -126,8 +151,14 @@ class TestPage {
 
   public async playSpectrogram(index: number) {
     const gridTiles = await this.gridTileComponents();
-    const playButton = gridTiles[index].locator("").first();
+    const playButton = gridTiles[index].locator("[part='play-icon']").first();
     await playButton.click();
+  }
+
+  public async pauseSpectrogram(index: number) {
+    const gridTiles = await this.gridTileComponents();
+    const pauseButton = gridTiles[index].locator("[part='pause-icon']").first();
+    await pauseButton.click();
   }
 
   public async openHelpDialog() {
@@ -159,10 +190,6 @@ class TestPage {
     await this.continueVerifyingButton().click();
   }
 
-  public async downloadResults() {
-    await this.downloadResultsButton().click();
-  }
-
   public async selectFile() {
     await this.fileInputButton().setInputFiles("file.json");
   }
@@ -176,16 +203,22 @@ class TestPage {
     await setBrowserAttribute<VerificationGrid>(this.gridComponent(), "grid-size" as any, value.toString());
   }
 
-  public async changeGridSource(value: string) {
-    await setBrowserAttribute<DataSource>(this.dataSourceComponent(), "src", value);
-  }
-
   public async changeGridKey(value: string) {
     await setBrowserAttribute<VerificationGrid>(this.gridComponent(), "audioKey", value);
   }
 
   public async changeAutoPage(value: boolean) {
     await setBrowserAttribute<VerificationGrid>(this.gridComponent(), "autoPage", value.toString());
+  }
+
+  public async changeGridSource(value: string) {
+    await setBrowserAttribute<DataSource>(this.dataSourceComponent(), "src", value);
+  }
+
+  public async changeSourceLocal(local: boolean) {
+    const targetedBrowserAttribute = "local";
+    const strategy = local ? setBrowserAttribute : removeBrowserAttribute;
+    strategy<DataSource>(this.dataSourceComponent(), targetedBrowserAttribute);
   }
 }
 

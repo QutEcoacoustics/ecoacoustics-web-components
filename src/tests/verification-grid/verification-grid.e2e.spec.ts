@@ -2,6 +2,7 @@ import { expect } from "@sand4rt/experimental-ct-web";
 import { Size } from "../../models/rendering";
 import { changeToDesktop, changeToMobile } from "../helpers";
 import { verificationGridFixture as test } from "./verification-grid.e2e.fixture";
+import { sleep } from "../../helpers/utilities";
 
 test.describe("single verification grid", () => {
   test.beforeEach(async ({ fixture }) => {
@@ -120,46 +121,154 @@ test.describe("single verification grid", () => {
 
       test("should correctly reset all the information cards", () => {});
 
-      test("should correctly move all indicators to the start of the recordings", async ({ fixture, page }) => {
-        await fixture.playSpectrogram(0);
+      test.fixme("should correctly move all indicators to the start of the recordings", async ({ fixture }) => {
+        const targetedTile = 0;
+        await fixture.playSpectrogram(targetedTile);
+
+        // TODO: we should use the new Playwright clock API when
+        // web-ctx-playwright gets upgraded to version 1.45.0
+        // https://playwright.dev/docs/api/class-clock
+        sleep(1_000);
+
+        const indicatorPosition = await fixture.indicatorPositions()[targetedTile];
+        expect(indicatorPosition).toBe(1_000);
+
+        await fixture.changeGridSource("http://localhost:3000/gridTiles.json");
+        const newIndicatorPosition = await fixture.indicatorPositions()[targetedTile];
+        expect(newIndicatorPosition).toBe(0);
       });
 
-      test("should reset all media controls to the paused state", () => {});
+      test("should reset all media controls to the paused state", async ({ fixture }) => {
+        const targetedTile = 0;
+        await fixture.playSpectrogram(targetedTile);
+
+        const initialMediaControlsState = await fixture.areMediaControlsPlaying(targetedTile);
+        expect(initialMediaControlsState).toBe(true);
+
+        await fixture.changeGridSource("http://localhost:3000/gridTiles.json");
+
+        const stateAfterSourceChange = await fixture.areMediaControlsPlaying(targetedTile);
+        expect(stateAfterSourceChange).toBe(false);
+      });
 
       test("should stop viewing history when the grid source changes", () => {});
     });
   });
 
   test.describe("data sources", () => {
-    test("should show a local data source in the correct location", () => {});
+    test("should show a local data source in the correct location", async ({ fixture }) => {
+      await fixture.changeSourceLocal(true);
+      expect(fixture.fileInputButton()).toBeVisible();
+    });
 
-    test("should not show a remote data source", () => {});
+    test("should not show a remote data source", async ({ fixture }) => {
+      await fixture.changeSourceLocal(false);
+      expect(fixture.fileInputButton()).toBeHidden();
+    });
   });
 
+  // TODO: finish off these tests
   test.describe("creating decisions", () => {});
 
   test.describe("downloading verifications", () => {
-    test("should not be able to download verifications if no decisions have been made", () => {});
+    test("should not be able to download verifications if no decisions have been made", async ({ fixture }) => {
+      expect(fixture.downloadResultsButton()).toBeDisabled();
+    });
 
-    test("downloading decisions with negative decisions", () => {});
+    test("should be able to download decisions after a decision is made", async ({ fixture }) => {
+      await fixture.makeDecision(0);
+      expect(fixture.downloadResultsButton()).toBeEnabled();
+    });
+
+    test("should download the correct decisions when viewing history", async ({ fixture }) => {
+      // we fill two pages of decisions so that we can go back multiple pages in
+      // the history view. This makes sure that when we view items from far
+      // back in history, items are not removed from the decisions array
+      await fixture.makeDecision(0);
+      await fixture.makeDecision(0);
+      await fixture.viewPreviousHistoryPage();
+      await fixture.viewPreviousHistoryPage();
+      await fixture.downloadResults();
+    });
+
+    test("should download the correct decisions after changing a decision in history", async ({ fixture }) => {
+      await fixture.makeDecision(0);
+      await fixture.viewPreviousHistoryPage();
+      await fixture.createSubSelection([0]);
+      await fixture.makeDecision(1);
+    });
+
+    test.fixme("downloading decisions with negative decisions", () => {});
   });
 
   test.describe("pagination", () => {
-    test("should disable the previous button when there are no previous pages", () => {});
+    test("should disable the previous button when there are no previous pages", async ({ fixture }) => {
+      expect(fixture.previousPageButton()).toBeDisabled();
+    });
 
-    test("should hide the next page button when not viewing history", () => {});
+    test("should disable the previous page button when at the end of history", async ({ fixture }) => {
+      await fixture.makeDecision(0);
+      await fixture.makeDecision(0);
+      expect(fixture.previousPageButton()).toBeEnabled();
 
-    test("should hide the 'Continue Verifying' button when not viewing history", () => {});
+      await fixture.viewPreviousHistoryPage();
+      expect(fixture.previousPageButton()).toBeEnabled();
+      await fixture.viewPreviousHistoryPage();
+      expect(fixture.previousPageButton()).toBeDisabled();
+    });
 
-    test("should show the next page button when viewing history", () => {});
+    test("should hide the next page button when not viewing history", async ({ fixture }) => {
+      expect(fixture.nextPageButton()).not.toBeVisible();
+    });
 
-    test("should show the 'Continue Verifying' button when viewing history", () => {});
+    test("should show the next page button when viewing history", async ({ fixture }) => {
+      await fixture.makeDecision(0);
+      await fixture.makeDecision(0);
+      await fixture.viewPreviousHistoryPage();
+      expect(fixture.nextPageButton()).toBeVisible();
+    });
 
-    test("should always show the next page button if auto paging is disabled", () => {});
+    test("should disable the next button when there are no next pages", async ({ fixture }) => {
+      await fixture.makeDecision(0);
+      await fixture.makeDecision(0);
+      await fixture.viewPreviousHistoryPage();
+      expect(fixture.nextPageButton()).toBeVisible();
+    });
 
-    test("should not automatically page if auto paging is disabled", () => {});
+    test("should hide the 'Continue Verifying' button when not viewing history", async ({ fixture }) => {
+      expect(fixture.continueVerifyingButton()).not.toBeVisible();
+    });
 
-    test("should automatically page if auto paging is enabled", () => {});
+    test("should show the 'Continue Verifying' button when viewing history", async ({ fixture }) => {
+      await fixture.makeDecision(0);
+      await fixture.viewPreviousHistoryPage();
+      expect(fixture.continueVerifyingButton()).toBeVisible();
+      expect(fixture.continueVerifyingButton()).toBeEnabled();
+    });
+
+    test("should always show the next page button if auto paging is disabled", async ({ fixture }) => {
+      await fixture.changeAutoPage(false);
+      expect(fixture.nextPageButton()).toBeVisible();
+      expect(fixture.nextPageButton()).toBeEnabled();
+    });
+
+    test("should automatically page if auto paging is enabled", async ({ fixture }) => {
+      const expectedPagedItems = await fixture.getGridSize();
+      await fixture.makeDecision(0);
+      const pagedItems = await fixture.getPagedItems();
+      expect(pagedItems).toEqual(expectedPagedItems);
+    });
+
+    test("should not automatically page if auto paging is disabled", async ({ fixture }) => {
+      await fixture.changeAutoPage(false);
+      await fixture.makeDecision(0);
+      const pagedItems = await fixture.getPagedItems();
+      expect(pagedItems).toEqual(0);
+
+      const pageSize = await fixture.getGridSize();
+      await fixture.nextPage();
+      expect(pagedItems).toEqual(pageSize);
+    });
   });
 
   test.describe("sub-selection", () => {
@@ -205,38 +314,91 @@ test.describe("single verification grid", () => {
 
     test.describe("explicit desktop selection mode", desktopSelectionTests);
 
-    test.describe("explicit tablet selection mode", () => tabletSelectionTests);
+    test.describe("explicit tablet selection mode", tabletSelectionTests);
 
     test.describe("default (desktop) selection mode", desktopSelectionTests);
 
     test.describe("default (mobile) selection mode", tabletSelectionTests);
 
-    test("should select all tiles if ctrl + A is pressed", () => {});
+    test("should select all tiles if ctrl + A is pressed", async ({ fixture, page }) => {
+      await page.keyboard.press("Control+A");
+
+      const expectedNumberOfSelected = await fixture.getGridSize();
+      const realizedNumberOfSelected = await fixture.selectedTiles();
+
+      expect(realizedNumberOfSelected).toHaveLength(expectedNumberOfSelected);
+    });
 
     test("should deselect all tiles if the escape key is pressed", () => {});
   });
 
   test.describe("highlight selection", () => {
-    test("should remove all highlights when the escape key is pressed", () => {});
+    test("should remove all highlights when the escape key is pressed", async ({ fixture, page }) => {
+      const subSelection = [0, 1, 2, 3];
+      await fixture.createSubSelection(subSelection);
+      expect(fixture.selectedTiles()).toHaveLength(subSelection.length);
+
+      await page.keyboard.press("Escape");
+      expect(fixture.selectedTiles()).toHaveLength(0);
+    });
   });
 
-  test("media control interactions", () => {
-    test("should change the spectrogram colours through the media controls should change the grid tile", () => {});
+  test.describe("information cards", () => {
+    test.beforeEach(async ({ fixture }) => {
+      await fixture.changeGridSource("http://localhost:3000/gridTiles.json");
+    });
 
-    test("should change the spectrograms axes through the media controls should change the grid tile", () => {});
+    test("should show the information about the current tile", async ({ fixture }) => {
+      const expectedInfoCard = [
+        { key: "Title 1", value: "Description 1" },
+        { key: "Title 2", value: "Description 2" },
+      ];
 
-    test("should remove spectrogram modifications when changing to the next page", () => {});
+      const realizedInfoCard = await fixture.infoCardItem(0);
+      expect(realizedInfoCard).toEqual(expectedInfoCard);
+    });
 
-    test("should show what options are currently selected in the media controls", () => {});
-  });
+    test("should update correctly when paging", async ({ fixture }) => {
+      await fixture.makeDecision(0);
 
-  test("information cards", () => {
-    test("should show the information about the current tile", () => {});
+      const expectedInfoCard = [
+        { key: "Title 1", value: "Description 1" },
+        { key: "Title 2", value: "Description 2" },
+      ];
+      const realizedInfoCard = await fixture.infoCardItem(0);
+      expect(realizedInfoCard).toEqual(expectedInfoCard);
+    });
 
-    test("should update correctly when paging", () => {});
+    test("should update correctly when viewing history", async ({ fixture }) => {
+      await fixture.makeDecision(0);
+      await fixture.viewPreviousHistoryPage();
 
-    test("should update correctly when viewing history", () => {});
+      const expectedInfoCard = [
+        { key: "Title 1", value: "Description 1" },
+        { key: "Title 2", value: "Description 2" },
+      ];
+      const realizedInfoCard = await fixture.infoCardItem(0);
+      expect(realizedInfoCard).toEqual(expectedInfoCard);
+    });
 
-    test("should update correctly when changing the grid source", () => {});
+    test("should update correctly when changing the grid source", async ({ fixture }) => {
+      const expectedInitialInfoCard = [
+        { key: "Title 1", value: "Description 1" },
+        { key: "Title 2", value: "Description 2" },
+      ];
+      const expectedNewInfoCard = [
+        { key: "Title 3", value: "Description 3" },
+        { key: "Title 4", value: "Description 4" },
+      ];
+
+      await fixture.changeGridSource("http://localhost:3000/gridTiles.json");
+
+      const realizedInitialInfoCard = await fixture.infoCardItem(0);
+      expect(realizedInitialInfoCard).toEqual(expectedInitialInfoCard);
+
+      await fixture.changeGridSource("http://localhost:3000/gridTiles.json");
+      const realizedNewInfoCard = await fixture.infoCardItem(0);
+      expect(realizedNewInfoCard).toEqual(expectedNewInfoCard);
+    });
   });
 });

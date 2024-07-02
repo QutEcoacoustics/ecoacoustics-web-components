@@ -39,6 +39,16 @@ test.describe("audio element communication", () => {
   });
 });
 
+test.describe("changing options", () => {
+  test("should change the spectrogram colours through the media controls should change the grid tile", () => {});
+
+  test("should change the spectrograms axes through the media controls should change the grid tile", () => {});
+
+  test("should remove spectrogram modifications when changing to the next page", () => {});
+
+  test("should show what options are currently selected in the media controls", () => {});
+});
+
 test.describe("slots", () => {
   test("custom play and pause icon via slots", async ({ fixture }) => {
     fixture.updateSlot(`
