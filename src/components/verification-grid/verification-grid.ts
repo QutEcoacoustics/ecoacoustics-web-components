@@ -16,6 +16,7 @@ import colorBrewer from "colorbrewer";
 import { booleanConverter } from "../../helpers/attributes";
 import { sleep } from "../../helpers/utilities";
 import { classMap } from "lit/directives/class-map.js";
+import { format } from "path";
 
 export type SelectionObserverType = "desktop" | "tablet" | "default";
 export type PageFetcher = (elapsedItems: number) => Promise<VerificationSubject[]>;
@@ -1033,10 +1034,15 @@ export class VerificationGrid extends AbstractComponent(LitElement) {
       formattedResults = JSON.stringify(results);
     } else if (fileFormat === "csv") {
       formattedResults = new Parser().parse(results);
+    } else if (fileFormat === "tsv") {
+      formattedResults = new Parser({ delimiter: "\t" }).parse(results);
     }
 
-    const type = fileFormat === "json" ? "application/json" : "text/csv";
-    const blob = new Blob([formattedResults], { type });
+    // create a media type as defined by e.g. application/json, text/csv, etc.
+    // https://www.iana.org/assignments/media-types/media-types.xhtml
+    const topLevelType = fileFormat === "json" ? "application" : "text";
+    const mediaType = `${topLevelType}/${fileFormat}`;
+    const blob = new Blob([formattedResults], { type: mediaType });
     const url = URL.createObjectURL(blob);
 
     // TODO: we should just be able to use the file download API
