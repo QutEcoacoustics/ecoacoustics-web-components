@@ -16,7 +16,6 @@ import colorBrewer from "colorbrewer";
 import { booleanConverter } from "../../helpers/attributes";
 import { sleep } from "../../helpers/utilities";
 import { classMap } from "lit/directives/class-map.js";
-import { format } from "path";
 
 export type SelectionObserverType = "desktop" | "tablet" | "default";
 export type PageFetcher = (elapsedItems: number) => Promise<VerificationSubject[]>;

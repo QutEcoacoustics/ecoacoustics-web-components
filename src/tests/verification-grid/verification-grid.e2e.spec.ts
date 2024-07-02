@@ -167,8 +167,28 @@ test.describe("single verification grid", () => {
     });
   });
 
-  // TODO: finish off these tests
-  test.describe("creating decisions", () => {});
+  test.describe("viewing history", () => {
+    test("should display a border around selected items", async ({ fixture }) => {
+      const decisionToMake = 0;
+      const expectedDecisionColor = await fixture.getDecisionColor(decisionToMake);
+      const expectedSelectionHighlights = await fixture.getGridSize();
+
+      await fixture.makeDecision(decisionToMake);
+      await fixture.viewPreviousHistoryPage();
+
+      const realizedColors = await fixture.shownDecisionHighlights();
+      expect(realizedColors).toHaveLength(expectedSelectionHighlights);
+      expect(realizedColors.every((color) => color === expectedDecisionColor)).toBe(true);
+    });
+
+    test("should highlight decision buttons that have been used", async ({ fixture }) => {
+      const decisionToMake = 0;
+      await fixture.makeDecision(decisionToMake);
+      await fixture.viewPreviousHistoryPage();
+
+      expect(fixture.shownDecisionButtonHighlights()).toBe([decisionToMake]);
+    });
+  });
 
   test.describe("downloading verifications", () => {
     test("should not be able to download verifications if no decisions have been made", async ({ fixture }) => {

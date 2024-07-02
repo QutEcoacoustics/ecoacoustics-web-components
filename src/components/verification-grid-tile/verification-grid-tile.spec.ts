@@ -8,7 +8,7 @@ test.describe("verification grid tile", () => {
   });
 
   [false, true].forEach((useShortcutKeys: boolean) => {
-    const shortcutKeysText = useShortcutKeys ? "with shortcut keys" : "without shortcut keys";
+    const shortcutKeysText = useShortcutKeys ? "with shortcut keys" : "key mouse click";
     const selectionStrategy = (fixture: any) =>
       useShortcutKeys ? fixture.keyboardSelectSpectrogramTile() : fixture.mouseSelectSpectrogramTile();
 

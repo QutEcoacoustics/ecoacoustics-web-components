@@ -24,9 +24,20 @@ test.describe("data source", () => {
 
       test(`should show the correct file name with ${loadFileText}`, () => {});
 
-      test(`should have the correct file type for a jsonfile ${loadFileText}`, () => {});
+      test(`should have the correct file type for a json ${loadFileText}`, () => {});
 
       test(`should have the correct file type for a csv file ${loadFileText}`, () => {});
+    });
+  });
+
+  // TODO: finish these tests
+  ["json", "csv", "tsv"].forEach((fileType) => {
+    test.describe(`detecting file type ${fileType}`, () => {
+      test.beforeEach(async () => {});
+
+      test(`should correctly identify a ${fileType} file type from media type headers`, () => {});
+
+      test(`should correctly identify a ${fileType} file type from file extensions`, () => {});
     });
   });
 

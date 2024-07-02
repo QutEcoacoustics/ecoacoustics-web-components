@@ -8,18 +8,20 @@ class TestPage {
   public constructor(public readonly page: Page) {}
 
   public component = () => this.page.locator("oe-info-card").first();
-  public downloadRecordingButton = () => this.page.locator("#download-recording");
-  public showMoreButton = () => this.page.locator("#show-more");
-  public subjectContent = () => this.page.locator(".subject-content");
+  public downloadRecordingButton = () => this.page.locator("#download-recording").first();
+  public showMoreButton = () => this.page.locator("#show-more").first();
+  public subjectContent = () => this.page.locator(".subject-content").first();
 
   public async create() {
     await this.page.setContent(`<oe-info-card></oe-info-card>`);
+    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForSelector("oe-info-card");
   }
 
   public async changeSubject(subject: VerificationSubject) {
     const model = new Verification({
       subject,
-      url: "http://localhost:5173/example.flac",
+      url: "http://localhost:3000/example.flac",
       tag: { id: undefined, text: "example" },
       confirmed: VerificationDecision.TRUE,
       additionalTags: [],
@@ -44,6 +46,11 @@ class TestPage {
         };
       });
     });
+  }
+
+  public async audioDownloadLocation(): Promise<string> {
+    const value = await getBrowserValue<HTMLAnchorElement>(this.downloadRecordingButton(), "href");
+    return value as string;
   }
 }
 

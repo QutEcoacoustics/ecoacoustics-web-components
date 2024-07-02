@@ -16,15 +16,27 @@ test.describe("Info Card", () => {
       company: "Google",
       hobbies: "Fishing",
     };
-
     await fixture.changeSubject(subjectModel);
+
+    const realizedAudioLink = await fixture.audioDownloadLocation();
+    expect(realizedAudioLink).toBe("http://localhost:3000/example.flac");
   });
 
-  test.fixme("should not have a 'show more' button if there are not more than three subject fields", () => {});
+  test("should not have a 'show more' button if there are not more than three subject fields", async ({ fixture }) => {
+    const subjectModel: VerificationSubject = {
+      name: "John Doe",
+      age: 52,
+      hobbies: "Fishing",
+    };
+    await fixture.changeSubject(subjectModel);
 
-  test.fixme("should not have a 'show more' button if there is no subject", ({ fixture }) => {
     const showMoreButton = fixture.showMoreButton();
-    expect(showMoreButton).not.toBeAttached();
+    await expect(showMoreButton).not.toBeAttached();
+  });
+
+  test("should not have a 'show more' button if there is no subject", async ({ fixture }) => {
+    const showMoreButton = fixture.showMoreButton();
+    await expect(showMoreButton).not.toBeAttached();
   });
 
   test("The show more and show less button should expand and hide information", async ({ fixture }) => {
@@ -42,19 +54,19 @@ test.describe("Info Card", () => {
     await fixture.changeSubject(subjectModel);
 
     const collapsedItem = await fixture.infoCardItems();
-    expect(fixture.showMoreButton()).toHaveText("Show More");
+    await expect(fixture.showMoreButton()).toHaveText("Show More");
     expect(collapsedItem).toHaveLength(numberOfCollapsedItems);
 
     await fixture.showMoreButton().click();
 
     const expandedItems = await fixture.infoCardItems();
-    expect(fixture.showMoreButton()).toHaveText("Show Less");
+    await expect(fixture.showMoreButton()).toHaveText("Show Less");
     expect(expandedItems).toHaveLength(numberOfExpandedItems);
 
     await fixture.showMoreButton().click();
 
     const collapsedItems = await fixture.infoCardItems();
-    expect(fixture.showMoreButton()).toHaveText("Show More");
+    await expect(fixture.showMoreButton()).toHaveText("Show More");
     expect(collapsedItems).toHaveLength(numberOfCollapsedItems);
   });
 
@@ -77,6 +89,7 @@ test.describe("Info Card", () => {
     ];
 
     await fixture.changeSubject(subjectModel);
+    await fixture.showMoreButton().click();
     const realizedSubjectModel = await fixture.infoCardItems();
 
     expect(realizedSubjectModel).toEqual(expectedSubjectModel);
@@ -87,13 +100,9 @@ test.describe("Info Card", () => {
     const expectedSubjectModel = [];
 
     const realizedSubjectModel = await fixture.infoCardItems();
-
     expect(realizedSubjectModel).toEqual(expectedSubjectModel);
   });
 
-  // any undefined values should be filtered out. However, it shouldn't filter
-  // out all falsy values. For instance, the number zero is falsy, but should
-  // still be shown as a value of zero can still provide useful information
   test("should handle a subject with empty value fields", async ({ fixture }) => {
     const subjectModel: VerificationSubject = {
       name: "",
@@ -103,9 +112,18 @@ test.describe("Info Card", () => {
       company: "",
       hobbies: undefined,
     };
-    const expectedSubjectModel = [{ key: "age", value: "0" }];
+    const expectedSubjectModel = [
+      { key: "name", value: "" },
+      { key: "age", value: "0" },
+      { key: "location", value: "" },
+      { key: "occupation", value: "" },
+      { key: "company", value: "" },
+      { key: "hobbies", value: "" },
+    ];
 
     await fixture.changeSubject(subjectModel);
+    await fixture.showMoreButton().click();
+
     const realizedSubjectModel = await fixture.infoCardItems();
     expect(realizedSubjectModel).toEqual(expectedSubjectModel);
   });
@@ -114,16 +132,16 @@ test.describe("Info Card", () => {
     const subjectModel: VerificationSubject = {
       name: "John Doe",
       age: 52,
-      location: "New York",
-      occupation: "Software Engineer",
-      company: "Google",
-      hobbies: "Fishing",
     };
     const newModel: VerificationSubject = {
-      age: 53,
       ...subjectModel,
+      age: 53,
     };
-    const expectedSubjectModel = [{ key: "age", value: "53" }];
+
+    const expectedSubjectModel = [
+            { key: "name", value: "John Doe" },
+            { key: "age", value: "53" },
+    ];
 
     await fixture.changeSubject(subjectModel);
     await fixture.changeSubject(newModel);

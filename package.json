@@ -13,9 +13,9 @@
     "build:docs": "rimraf build/ && cem analyze --litelement --globs \"src/components/**/*.ts\" && vite build && eleventy --config=eleventy.config.js",
     "build:components": "vite build && tsc",
     "publish:components": "pnpm build:components && npm publish --access public",
-    "test": "pnpm test:unit; pnpm test:e2e",
-    "test:unit": "pnpm build:components && playwright test components/",
-    "test:e2e": "pnpm build:components && playwright test tests/",
+    "test": "playwright test .",
+    "test:unit": "playwright test src/components/",
+    "test:e2e": "playwright test tests/",
     "lint": "eslint ."
   },
   "files": [

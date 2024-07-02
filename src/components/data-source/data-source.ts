@@ -6,7 +6,7 @@ import dataSourceStyles from "./css/style.css?inline";
 import { booleanConverter } from "../../helpers/attributes";
 import csv from "csvtojson";
 
-type SupportedFileTypes = "json" | "csv";
+type SupportedFileTypes = "json" | "csv" | "tsv";
 type Char = string;
 
 // TODO: this entire component needs to be refactored
@@ -128,8 +128,28 @@ export class DataSource extends AbstractComponent(LitElement) {
   // TODO: The contents should probably be a pointer because otherwise we are copying the entire file!
   private fileFormat(contents: Char): SupportedFileTypes {
     const isJson = contents === "{" || contents === "[";
-    this.fileType = isJson ? "json" : "csv";
-    return this.fileType;
+
+    // to check if the input file is a csv or tsv file, we can count the number
+    // of commas and tabs in the first line of the file
+    // if the number of commas is greater than the number of tabs, then it is a
+    // csv file, otherwise it is a tsv file
+    const commaCount = contents.split(",").length;
+    const tabCount = contents.split("\t").length;
+
+    if (isJson) {
+      this.fileType = "json";
+      return "json";
+    } else if (commaCount > tabCount) {
+      this.fileType = "csv";
+      return "csv";
+    } else if (tabCount > commaCount) {
+      this.fileType = "tsv";
+      return "tsv";
+    }
+
+    console.warn("Could not determine file format, defaulting to JSON.");
+    this.fileType = "json";
+    return "json";
   }
 
   private async updateVerificationGrid() {

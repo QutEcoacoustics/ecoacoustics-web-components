@@ -3,7 +3,7 @@ import { test } from "@sand4rt/experimental-ct-web";
 import { getBrowserAttribute, getBrowserValue, removeBrowserAttribute, setBrowserAttribute } from "../helpers";
 import { VerificationGrid } from "../../components/verification-grid/verification-grid";
 import { Size } from "../../models/rendering";
-import { DataSource, Indicator, VerificationGridTile } from "../../components";
+import { DataSource, Decision, Indicator, VerificationGridTile } from "../../components";
 import { Verification } from "../../models/verification";
 
 class TestPage {
@@ -93,6 +93,12 @@ class TestPage {
     }
 
     return tiles;
+  }
+
+  public async getDecisionColor(index: number): Promise<string> {
+    const decisionButton = this.decisionButtons()[index];
+    const color = await getBrowserValue<Decision>(decisionButton, "color");
+    return color as string;
   }
 
   public async availableDecision(): Promise<string[]> {
